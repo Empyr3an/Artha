@@ -1,12 +1,16 @@
 import requests
-
+from requests_oauthlib import OAuth1
 
 class TwitterAPI:
 
-    def __init__(self, bearer_token, api_key=None, api_secret=None,
-                 access_token=None, access_token_secret=None):
+    def __init__(self, bearer_token, key=None, secret=None,
+                 token=None, token_secret=None):
         self.bearer = {"Authorization": "Bearer " + bearer_token}
         self.endpoint = 'https://api.twitter.com/2'
+
+        if key and secret and token and token_secret:
+            self.oauth = OAuth1(key, secret, token, token_secret)
+            self.content = {"Content-type": "application/json"}
 
     def user_lookup(self, user, user_fields=None):
         options = "?"
@@ -73,3 +77,9 @@ class TwitterAPI:
                 yield req.json()["data"]
             except Exception as e:
                 raise e
+    
+    def rate_limits(self):
+        return requests.get("https://api.twitter.com/1.1/application/rate_limit_status.json", auth=self.oauth).json()
+
+    def home_timeline(self):
+        return requests.get("https://api.twitter.com/1.1/statuses/home_timeline.json", auth=self.oauth).json()
