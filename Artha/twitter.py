@@ -1,12 +1,17 @@
 import requests
 from requests_oauthlib import OAuth1
+import sqlite3
+# import time
+
 
 class TwitterAPI:
 
     def __init__(self, bearer_token, key=None, secret=None,
                  token=None, token_secret=None):
+
+        self.endpoint2 = 'https://api.twitter.com/2'
+        self.endpoint1 = 'https://api.twitter.com/1.1'
         self.bearer = {"Authorization": "Bearer " + bearer_token}
-        self.endpoint = 'https://api.twitter.com/2'
 
         if key and secret and token and token_secret:
             self.oauth = OAuth1(key, secret, token, token_secret)
@@ -14,27 +19,30 @@ class TwitterAPI:
 
     def user_lookup(self, user, user_fields=None):
         options = "?"
-
+        url = self.endpoint2 + "/users"
         if user_fields:
             options += "user.fields="+",".join(user_fields)
 
         try:
-            return requests.get("users/" + user +
-                                options,
-                                headers=self.bearer).json()["data"]
-        except Exception:
-            try:
-                return requests.get(self.endpoint +
-                                    "/users/by/username/" +
-                                    user + options,
-                                    headers=self.bearer).json()["data"]
-            except Exception:
-                raise ValueError("not a valid user")
+            req = requests.get(url + "/" + user +
+                               options, headers=self.bearer)
+            if req.status_code == 200:
+                return req.json()['data']
+            else:
+                req2 = requests.get(url + "/by/username/" +
+                                    user + options, headers=self.bearer)
+                if req2.status_code == 200:
+                    return req2.json()['data']
+                else:
+                    raise ValueError(req2.url)
+
+        except Exception as e:
+            raise ValueError(e)
 
     def get_follows(self, user_name):
         user_id = self.user_lookup(user_name)["id"]
-        url = (self.endpoint + "/users/" + user_id +
-               "/following?max_results=1000")
+        url = self.endpoint2 + "/users/" + user_id +\
+                               "/following?max_results=1000"
         try:
             req = requests.get(url, headers=self.bearer).json()
             yield req["data"]
@@ -49,6 +57,25 @@ class TwitterAPI:
                 yield req["data"]
             except Exception as e:
                 raise e
+
+    def get_follows1(self, user_name):
+        user_id = self.user_lookup(user_name)["id"]
+        cursor = -1
+        url = (self.endpoint2 + "/friends/list.json?cursor = " + str(cursor) + "&skip_status=true&include_user_entities=false&screen_name=" + user_id)
+        try:
+            req = requests.get(url, headers=self.bearer).json()
+            yield req["data"]
+        except Exception as e:
+            raise e
+
+        # while "next_token" in req["meta"]:
+        #     try:
+        #         req = requests.get(url+"&pagination_token=" +
+        #                            req["meta"]["next_token"],
+        #                            headers=self.bearer).json()
+        #         yield req["data"]
+        #     except Exception as e:
+        #         raise e
 
     def get_tweets(self, user_name, results=500,
                    start_date=None, tweet_fields=None):
@@ -77,9 +104,13 @@ class TwitterAPI:
                 yield req.json()["data"]
             except Exception as e:
                 raise e
-    
+
     def rate_limits(self):
         return requests.get("https://api.twitter.com/1.1/application/rate_limit_status.json", auth=self.oauth).json()
 
     def home_timeline(self):
         return requests.get("https://api.twitter.com/1.1/statuses/home_timeline.json", auth=self.oauth).json()
+
+    def test_auth(self):
+        return requests.get(self.endpoint2+"/tweets?ids=1228393702244134912", headers=self.bearer).status_code
+

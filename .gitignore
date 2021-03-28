@@ -1,3 +1,4 @@
 .python-version
 config.py
 *__pycache__*
+data/
