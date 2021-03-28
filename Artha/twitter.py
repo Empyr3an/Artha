@@ -1,6 +1,7 @@
 import requests
 from requests_oauthlib import OAuth1
 import sqlite3
+import itertools
 # import time
 
 
@@ -61,13 +62,17 @@ class TwitterAPI:
     def get_follows1(self, user_name):
         user_id = self.user_lookup(user_name)["id"]
         cursor = -1
-        url = (self.endpoint2 + "/friends/list.json?cursor = " + str(cursor) + "&skip_status=true&include_user_entities=false&screen_name=" + user_id)
+        url = self.endpoint2 + "/friends/list.json?cursor = " + str(cursor) +\
+                               "&skip_status=true" +\
+                               "&include_user_entities=false" +\
+                               "&screen_name=" + user_id
         try:
             req = requests.get(url, headers=self.bearer).json()
             yield req["data"]
         except Exception as e:
             raise e
 
+        # TODO implement apiv1 follows for more space
         # while "next_token" in req["meta"]:
         #     try:
         #         req = requests.get(url+"&pagination_token=" +
@@ -89,7 +94,11 @@ class TwitterAPI:
 
         if tweet_fields:
             url += "&tweet.fields=" + ",".join(tweet_fields)
-
+        else:
+            url += "&tweet.fields=" + ",".join([
+                    "created_at", "context_annotations", "entities",
+                    "in_reply_to_user_id", "referenced_tweets"
+                    ])
         try:
             req = requests.get(url, headers=self.bearer)
             yield req.json()["data"]
@@ -106,11 +115,48 @@ class TwitterAPI:
                 raise e
 
     def rate_limits(self):
-        return requests.get("https://api.twitter.com/1.1/application/rate_limit_status.json", auth=self.oauth).json()
+        return requests.get(self.endpoint1 +
+                            "/application/rate_limit_status.json",
+                            auth=self.oauth).json()
 
     def home_timeline(self):
-        return requests.get("https://api.twitter.com/1.1/statuses/home_timeline.json", auth=self.oauth).json()
+        return requests.get(self.endpoint1+"/statuses/home_timeline.json",
+                            auth=self.oauth).json()
 
     def test_auth(self):
-        return requests.get(self.endpoint2+"/tweets?ids=1228393702244134912", headers=self.bearer).status_code
+        return requests.get(self.endpoint2+"/tweets?ids=1228393702244134912",
+                            headers=self.bearer).status_code
 
+
+class TSQLite:
+
+    def __init__(self, location):
+        self.conn = sqlite3.connect(location)
+        self.cur = self.conn.cursor()
+
+    def create_follow_table(self, twitter, username):
+        gen = twitter.get_follows(username)  # generator of follows
+        following = list(itertools.chain.from_iterable(gen))  # flatten gen
+        with self.conn:
+            self.cur.execute("\
+                CREATE TABLE u" + username + "\
+                (id integer, name text, username text)")
+            for user_info in following:
+                self.cur.execute("INSERT INTO u" + username +
+                                 " VALUES(:id, :name, :username)", user_info)
+
+    def drop_table(self, name):
+        with self.conn:
+            self.cur.execute("DROP TABLE u"+name)
+
+    def current_tables(self):
+        tables = [v[0] for v in
+                  self.conn.execute("""
+                        SELECT name
+                        FROM sqlite_master
+                        WHERE type='table';
+                  """).fetchall()
+                  if v[0] != "sqlite_sequence"]
+
+        return [(v, len(self.conn.execute("SELECT id FROM " + v).fetchall()))
+                for v in tables]
