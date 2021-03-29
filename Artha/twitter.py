@@ -2,6 +2,7 @@ import requests
 from requests_oauthlib import OAuth1
 import sqlite3
 import itertools
+
 # import time
 
 
@@ -45,8 +46,8 @@ class TwitterAPI:
         url = self.endpoint2 + "/users/" + user_id +\
                                "/following?max_results=1000"
         try:
-            req = requests.get(url, headers=self.bearer).json()
-            yield req["data"]
+            req = requests.get(url, headers=self.bearer)
+            yield req.json()["data"]
         except Exception as e:
             raise e
 
@@ -54,33 +55,30 @@ class TwitterAPI:
             try:
                 req = requests.get(url+"&pagination_token=" +
                                    req["meta"]["next_token"],
-                                   headers=self.bearer).json()
-                yield req["data"]
+                                   headers=self.bearer)
+                yield req.json()["data"]
             except Exception as e:
                 raise e
 
     def get_follows1(self, user_name):
-        user_id = self.user_lookup(user_name)["id"]
-        cursor = -1
-        url = self.endpoint2 + "/friends/list.json?cursor = " + str(cursor) +\
-                               "&skip_status=true" +\
-                               "&include_user_entities=false" +\
-                               "&screen_name=" + user_id
+        # user_id = self.user_lookup(user_name)["id"]
+        url = self.endpoint1 + "/friends/ids.json?" +\
+                               "&count=5000" +\
+                               "&screen_name=" + user_name
         try:
-            req = requests.get(url, headers=self.bearer).json()
-            yield req["data"]
+            req = requests.get(url, auth=self.oauth)
+            yield req.json()["ids"]
         except Exception as e:
             raise e
 
-        # TODO implement apiv1 follows for more space
-        # while "next_token" in req["meta"]:
-        #     try:
-        #         req = requests.get(url+"&pagination_token=" +
-        #                            req["meta"]["next_token"],
-        #                            headers=self.bearer).json()
-        #         yield req["data"]
-        #     except Exception as e:
-        #         raise e
+        while req.json()["next_cursor"] > -1:
+            try:
+                req = requests.get(url+"&cursor=" +
+                                   req.json()["next_cursor_str"],
+                                   auth=self.oauth)
+                yield req.json()["ids"]
+            except Exception as e:
+                raise e
 
     def get_tweets(self, user_name, results=500,
                    start_date=None, tweet_fields=None):
@@ -160,3 +158,5 @@ class TSQLite:
 
         return [(v, len(self.conn.execute("SELECT id FROM " + v).fetchall()))
                 for v in tables]
+
+    # TODO implement autofollow

@@ -3,3 +3,6 @@ config.py
 *__pycache__*
 data/
 .vscode
+*.json
+*.txt
+!README.txt
