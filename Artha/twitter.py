@@ -1,7 +1,10 @@
 import requests
 from requests_oauthlib import OAuth1
-import sqlite3
 import itertools
+import pymongo
+import urllib
+from . import mongo_config as c
+
 
 # import time
 
@@ -41,7 +44,7 @@ class TwitterAPI:
         except Exception as e:
             raise ValueError(e)
 
-    def get_follows(self, user_name):
+    def get_following(self, user_name):
         user_id = self.user_lookup(user_name)["id"]
         url = self.endpoint2 + "/users/" + user_id +\
                                "/following?max_results=1000"
@@ -60,7 +63,7 @@ class TwitterAPI:
             except Exception as e:
                 raise e
 
-    def get_follows1(self, user_name):
+    def get_following1(self, user_name):
         # user_id = self.user_lookup(user_name)["id"]
         url = self.endpoint1 + "/friends/ids.json?" +\
                                "&count=5000" +\
@@ -126,37 +129,78 @@ class TwitterAPI:
                             headers=self.bearer).status_code
 
 
+class TMongo:
+
+    username = urllib.parse.quote_plus(c.mongo_username)
+    password = urllib.parse.quote_plus(c.mongo_password)
+    cluster = pymongo.MongoClient("mongodb+srv://{}:{}@cluster0.qpf0e.mongodb.net/ \
+                                   Artha?retryWrites=true&w=majority"
+                                  .format(username, password))
+    db = cluster["Twitter"]
+
+    @classmethod
+    def update_account_data(cls, twitter, username, following):
+        following.append(twitter.user_lookup(username)["id"])
+        url = "https://api.twitter.com/2/users?user.fields=\
+               created_at,\
+               description,\
+               entities,\
+               id,\
+               name,\
+               protected,\
+               url,\
+               username,\
+               verified,\
+               public_metrics\
+               &ids="
+
+        follow_data = []
+        for i in range(0, int(len(following)/100)+1):
+            req = requests.get(url+",".join(following[i*100:i*100 + 100]),
+                               headers=twitter.bearer)["data"]
+            follow_data[len(follow_data)-1:len(follow_data)-1] = req.json()
+
+        cls.db["TwitterUsers"].insert_many([user for user in follow_data])
+
+
 class TSQLite:
 
-    def __init__(self, location):
-        self.conn = sqlite3.connect(location)
-        self.cur = self.conn.cursor()
+    @classmethod
+    def create_follow_table(cls, conn, twitter, username):
+        gen = twitter.get_following1(username)  # generator of follows
+        following = list(map(str, list(itertools.chain.from_iterable(gen))))
 
-    def create_follow_table(self, twitter, username):
-        gen = twitter.get_follows(username)  # generator of follows
-        following = list(itertools.chain.from_iterable(gen))  # flatten gen
-        with self.conn:
-            self.cur.execute("\
-                CREATE TABLE u" + username + "\
-                (id integer, name text, username text)")
-            for user_info in following:
-                self.cur.execute("INSERT INTO u" + username +
-                                 " VALUES(:id, :name, :username)", user_info)
+        try:
+            with conn:
+                conn.cursor().execute("\
+                    CREATE TABLE following\
+                    (account_id str)")
+                for user_info in following:
+                    conn.cursor().execute("INSERT INTO following\
+                                          VALUES(:id)", [user_info])
+        except Exception as e:
+            print(following[:10])
+            raise e
 
-    def drop_table(self, name):
-        with self.conn:
-            self.cur.execute("DROP TABLE u"+name)
+        TMongo.update_account_data(twitter, username, following)
 
-    def current_tables(self):
+    @classmethod
+    def drop_table(cls, conn, name):
+        with conn:
+            conn.cursor().execute("DROP TABLE u"+name)
+
+    @classmethod
+    def current_tables(cls, conn):
         tables = [v[0] for v in
-                  self.conn.execute("""
-                        SELECT name
-                        FROM sqlite_master
-                        WHERE type='table';
+                  conn.cursor().execute("""
+                    SELECT name
+                    FROM sqlite_master
+                    WHERE type='table';
                   """).fetchall()
                   if v[0] != "sqlite_sequence"]
 
-        return [(v, len(self.conn.execute("SELECT id FROM " + v).fetchall()))
+        return [(v, len(conn.cursor().execute("SELECT id \
+                                               FROM " + v).fetchall()))
                 for v in tables]
 
-    # TODO implement autofollow
+        # TODO implement autofollow

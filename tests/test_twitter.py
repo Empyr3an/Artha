@@ -17,7 +17,7 @@ def test_user_lookup():
     assert checkra.user_lookup("HarshaSomisetty")["id"] ==\
            '895646764694355968'
 # class TestTwitterAPI:
-    
+
 #     def __init__(self)
 
 # TODO create tests for twitter sqlite stuff

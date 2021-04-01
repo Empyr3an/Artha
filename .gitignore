@@ -6,3 +6,4 @@ data/
 *.json
 *.txt
 !README.txt
+Artha/config.py
