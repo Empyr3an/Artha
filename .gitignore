@@ -6,4 +6,4 @@ data/
 *.json
 *.txt
 !README.txt
-Artha/config.py
+Artha/mongo_config.py
