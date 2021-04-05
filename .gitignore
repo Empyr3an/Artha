@@ -1,9 +1,10 @@
 .python-version
 config.py
 *__pycache__*
-data/
 .vscode
 *.json
 *.txt
 !README.txt
 Artha/mongo_config.py
+Artha/error_codes.py
+
