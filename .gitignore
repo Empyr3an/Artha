@@ -7,4 +7,4 @@ config.py
 !README.txt
 Artha/mongo_config.py
 Artha/error_codes.py
-
+notebooks/*.txt
