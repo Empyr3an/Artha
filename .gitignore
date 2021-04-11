@@ -8,3 +8,4 @@ config.py
 Artha/mongo_config.py
 Artha/error_codes.py
 notebooks/*.txt
+data/users/*
