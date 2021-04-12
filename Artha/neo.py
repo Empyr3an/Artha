@@ -12,13 +12,16 @@ class Neo:
     # TODO only add if node doensn't already exist
     def create_node(self, params):
         self.session.run("CREATE(p:Person $param)", param=params)
+    
+    # def bulk_create_nodes(self, location):
+
 
     # TODO only add if relation doensn't already exist
     def create_relation(self, from_username, to_username):
         result = self.session.run("MATCH (n:Person), (m:Person) "
                                   "WHERE n.username = $from_username "
                                   "AND m.username = $to_username "
-                                  "MERGE (n)-[:Follows]->(m)"
+                                  "MERGE (n)-[:FOLLOWS]->(m)"
                                   "RETURN n.username, m.username",
                                   from_username=from_username,
                                   to_username=to_username)
