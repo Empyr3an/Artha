@@ -140,7 +140,7 @@ class TwitterAPI:
                             "in_reply_to_user_id", "referenced_tweets"
                             ]
 
-        url = self.endpoint + ('/tweets/search/all?max_results=' + str(count) +
+        url = self.endpoint2 + ('/tweets/search/all?max_results=' + str(count) +
                                '&start_time=' + start_date +
                                '&query=from:' + user_name +
                                '&tweet.fields=' + ','.join(tweet_fields))
@@ -224,35 +224,46 @@ class TMongo:
                                   .format(username, password))
     db = cluster["Twitter"]
 
-    # add information about a user and all their following to mongodb database
+    # store all user tweets to mongodb
     @classmethod
-    def update_account_data(cls, twitter, username, following):
-        # adds desired
-        following.append(str(twitter.user_lookup(username)["id"]))
+        def mongo_tweets(cls, twitter, username):
+            # adds desired
 
-        url = ('https://api.twitter.com/2/users?user.fields='
-               'created_at,'
-               'description,'
-               'entities,'
-               'id,'
-               'name,'
-               'protected,'
-               'url,'
-               'username,'
-               'verified,'
-               'public_metrics'
-               '&ids=')
+            tweet_fields = [
+                'text',
+                'attachments',
+                'context_annotations',
+                'created_at',
+                'entities'
+            ]
 
-        follow_data = []
-        for i in range(0, int(len(following)/100)+1):
-            req = requests.get(url+",".join(following[i*100:i*100 + 100]),
-                               headers=twitter.bearer)
-            follow_data[len(follow_data)-1:
-                        len(follow_data)-1] = req.json()["data"]
+            gen = twitter.get_tweets(user_name = username, tweet_fields = tweet_fields)
 
-        # return cls.db["TwitterUsers"].update_many(
-        #                           [user for user in follow_data])
-        # print("updated mongo")
+            # following.append(str(twitter.user_lookup(username)["id"]))
+
+            # url = ('https://api.twitter.com/2/users?user.fields='
+            #     'created_at,'
+            #     #    'description,'
+            #     'entities,'
+            #     'id,'
+            #     'name,'
+            #     #    'protected,'
+            #     #    'url,'
+            #     'username,'
+            #     'verified,'
+            #     'public_metrics'
+            #     '&ids=')
+
+            follow_data = []
+            for i in range(0, int(len(following)/100)+1):
+                req = requests.get(url+",".join(following[i*100:i*100 + 100]),
+                                headers=twitter.bearer)
+                follow_data[len(follow_data)-1:
+                            len(follow_data)-1] = req.json()["data"]
+
+            return cls.db["TwitterUsers"].update_many(
+                                      [user for user in follow_data])
+            # print("updated mongo")
 
 
 class TSQLite:
