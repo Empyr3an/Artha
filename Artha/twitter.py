@@ -1,12 +1,10 @@
 import requests
 from requests_oauthlib import OAuth1
 # import itertools
-import pymongo
-import urllib
-from . import mongo_config as c
 import numpy as np
 import json
 from tqdm import tqdm
+# from configs import twitter_config as c
 
 
 # TODO organize methods better, add tests
@@ -128,7 +126,7 @@ class TwitterAPI:
         return [str(i) for i in data]
 
     # returns generator of user's tweets
-    def get_tweets(self, user_name, count=500,
+    def get_tweets(self, user_name, cnt=500,
                    start_date=None, tweet_fields=None):
 
         if not start_date:  # normally get twee from earliest history
@@ -140,10 +138,10 @@ class TwitterAPI:
                             "in_reply_to_user_id", "referenced_tweets"
                             ]
 
-        url = self.endpoint2 + ('/tweets/search/all?max_results=' + str(count) +
-                               '&start_time=' + start_date +
-                               '&query=from:' + user_name +
-                               '&tweet.fields=' + ','.join(tweet_fields))
+        url = self.endpoint2 + ('/tweets/search/all?max_results=' + str(cnt) +
+                                '&start_time=' + start_date +
+                                '&query=from:' + user_name +
+                                '&tweet.fields=' + ','.join(tweet_fields))
 
         try:
             req = requests.get(url, headers=self.bearer)
@@ -213,119 +211,19 @@ class TwitterAPI:
                             headers=self.bearer).status_code
 
 
-# class to manage reference data stored in mongodb
-class TMongo:
-
-    username = urllib.parse.quote_plus(c.mongo_username)
-    password = urllib.parse.quote_plus(c.mongo_password)
-    cluster = pymongo.MongoClient("mongodb+srv://{}:{}"
-                                  "@cluster0.qpf0e.mongodb.net"
-                                  "/Artha?retryWrites=true&w=majority"
-                                  .format(username, password))
-    db = cluster["Twitter"]
-
-    # store all user tweets to mongodb
-    @classmethod
-        def mongo_tweets(cls, twitter, username):
-            # adds desired
-
-            tweet_fields = [
-                'text',
-                'attachments',
-                'context_annotations',
-                'created_at',
-                'entities'
-            ]
-
-            gen = twitter.get_tweets(user_name = username, tweet_fields = tweet_fields)
-
-            # following.append(str(twitter.user_lookup(username)["id"]))
-
-            # url = ('https://api.twitter.com/2/users?user.fields='
-            #     'created_at,'
-            #     #    'description,'
-            #     'entities,'
-            #     'id,'
-            #     'name,'
-            #     #    'protected,'
-            #     #    'url,'
-            #     'username,'
-            #     'verified,'
-            #     'public_metrics'
-            #     '&ids=')
-
-            follow_data = []
-            for i in range(0, int(len(following)/100)+1):
-                req = requests.get(url+",".join(following[i*100:i*100 + 100]),
-                                headers=twitter.bearer)
-                follow_data[len(follow_data)-1:
-                            len(follow_data)-1] = req.json()["data"]
-
-            return cls.db["TwitterUsers"].update_many(
-                                      [user for user in follow_data])
-            # print("updated mongo")
-
-
-class TSQLite:
-    # TODO Modify follow table to list usernames as well as IDs
-
-    @classmethod
-    def premaid_follow_table(cls, conn, following):
-        try:
-            with conn:
-                if "following" in cls.current_tables(conn):
-                    conn.cursor().execute("DROP TABLE following")
-
-                conn.cursor().execute("\
-                    CREATE TABLE following\
-                    (id str, name str, username str)")
-
-                for user in following:
-                    conn.cursor().execute("INSERT INTO following\
-                                           VALUES(:id, \
-                                                  :name, \
-                                                  :username)",
-                                          user)
-        except Exception as e:
-            print(following[:10])
-            raise e
-
-    @classmethod
-    def create_follow_table(cls, conn, twitter, username):
-        print('creating table for', username)
-        following = [str(id) for id in twitter.get_following1(username)]
-
-        try:
-            with conn:
-                if "following" in cls.current_tables(conn):
-                    conn.cursor().execute("DROP TABLE following")
-
-                conn.cursor().execute("\
-                    CREATE TABLE following\
-                    (account_id str)")
-
-                for user_id in following:
-                    conn.cursor().execute("INSERT INTO following\
-                                           VALUES(:account_id)", [user_id])
-        except Exception as e:
-            print(following[:10])
-            raise e
-        # print("updating mongo")
-        # TMongo.update_account_data(twitter, username, following)
-
-    @classmethod
-    def drop_table(cls, conn, name):
-        with conn:
-            conn.cursor().execute("DROP TABLE u"+name)
-
-    @classmethod
-    def current_tables(cls, conn):
-        tables = [v[0] for v in
-                  conn.cursor().execute("""
-                    SELECT name
-                    FROM sqlite_master
-                    WHERE type='table';
-                  """).fetchall()
-                  if v[0] != "sqlite_sequence"]
-
-        return tables
+# error_codes = {
+#                 200: "OK",
+#                 304: "Not Modified",
+#                 400: "Bad Request",
+#                 401: "Unauthorized",
+#                 403: "Forbidden",
+#                 404: "Not Found",
+#                 406: "Not Acceptable",
+#                 410: "Gone",
+#                 422: "Unprocessable Entity",
+#                 429: "Too Many Requests",
+#                 500: "Internal Server Error",
+#                 502: "Bad Gateway",
+#                 503: "Service Unavailable",
+#                 504: "Gateway Timeout"
+#             }
