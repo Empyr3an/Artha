@@ -167,7 +167,7 @@ class TwitterAPI:
                             '1036115996',
                             '1272699992575217664'
                             ]
-
+        followed = []
         for follow in to_follow:
             if follow not in people_to_ignore:
                 try:
@@ -175,7 +175,11 @@ class TwitterAPI:
                 except Exception as e:
                     raise(e)
                 else:
-                    print("Followed", self.user_lookup(follow)["name"], follow)
+                    followed.append(follow)
+                    # follow_lookup = self.user_lookup(follow)
+                    # print("Followed", follow["name"])
+
+        return followed
 
     # returns all user ids user1 follows that user2 does not
     def get_follow_differences(self, user1, user2):

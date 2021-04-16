@@ -1,9 +1,17 @@
 
 class TSQLite:
-    # TODO Modify follow table to list usernames as well as IDs
 
     @classmethod
-    def premaid_follow_table(cls, conn, following):
+    def db_name(cls, conn):
+        return conn.cursor() \
+                   .execute("PRAGMA database_list") \
+                   .fetchall()[0][2] \
+                   .split("/")[-1][1:-3]
+
+    # takes in follows data(id, name, username) data and makes table
+    @classmethod
+    def follow_table(cls, conn, following):
+        username = cls.db_name(conn)
         try:
             with conn:
                 if "following" in cls.current_tables(conn):
@@ -19,32 +27,21 @@ class TSQLite:
                                                   :name, \
                                                   :username)",
                                           user)
+                print("created follow table for ", username)
         except Exception as e:
             print(following[:10])
             raise e
 
-    @classmethod
-    def create_follow_table(cls, conn, twitter, username):
-        print('creating table for', username)
-        following = [str(id) for id in twitter.get_following1(username)]
+    # takes in tweet json data, creates table
+    # @classmethod
+    # def tweet_table(cls, conn, tweets):
+    #     username = cls.db_name(conn)
 
-        try:
-            with conn:
-                if "following" in cls.current_tables(conn):
-                    conn.cursor().execute("DROP TABLE following")
-
-                conn.cursor().execute("\
-                    CREATE TABLE following\
-                    (account_id str)")
-
-                for user_id in following:
-                    conn.cursor().execute("INSERT INTO following\
-                                           VALUES(:account_id)", [user_id])
-        except Exception as e:
-            print(following[:10])
-            raise e
-        # print("updating mongo")
-        # TMongo.update_account_data(twitter, username, following)
+    #     try:
+    #         with conn:
+    #     except Exception as e:
+    #         print(tweets[0])
+    #         raise e
 
     @classmethod
     def drop_table(cls, conn, name):

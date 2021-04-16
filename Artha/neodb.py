@@ -28,7 +28,9 @@ class Neo:
         conn_temp.row_factory = self.dict_factory
 
         try:
-            temp_follows = conn_temp.cursor().execute("select * from following").fetchall()
+            temp_follows = conn_temp.cursor() \
+                                    .execute("select * from following") \
+                                    .fetchall()
         except Exception:
             return -1
 
@@ -40,6 +42,7 @@ class Neo:
                                                 ])
             writer.writeheader()
             writer.writerows(temp_follows)
+        return len(temp_follows)
 
     def load_csv_data(self, username, location="../data/users"):
         if username == "checkra_":
@@ -51,28 +54,32 @@ class Neo:
                                         n.username = 'checkra_'
                              ''')
         else:
-            self.update_csv_location(username)
+            csv_length = self.update_csv_location(username)
 
-        # insert all nodes from csv
-        self.session.run('''
-                    USING PERIODIC COMMIT 1000 LOAD CSV WITH HEADERS
-                    FROM 'file:/follows.csv' AS row
-                    MERGE (n:Person {id:row.id})
-                    ON CREATE SET n.id = row.id,
-                                  n.name = row.name,
-                                  n.username = row.username
-                    ''')
+        if csv_length > 0:
+            # insert all nodes from csv
+            self.session.run('''
+                        USING PERIODIC COMMIT 1000 LOAD CSV WITH HEADERS
+                        FROM 'file:/follows.csv' AS row
+                        MERGE (n:Person {id:row.id})
+                        ON CREATE SET n.id = row.id,
+                                    n.name = row.name,
+                                    n.username = row.username
+                        ''')
 
-        # create all edges
-        node_result = self.session.run(
-                    "USING PERIODIC COMMIT 1000 LOAD CSV WITH HEADERS FROM 'file:/follows.csv' AS row "
-                    "MATCH (m:Person {username: '"+username+"'}) "
-                    "MATCH (n:Person {id:row.id}) "
-                    "MERGE (m)-[r:FOLLOWS]->(n) "
-                    "return count(r)"
-                    )
+            # create all edges
+            node_result = self.session.run(
+                        "USING PERIODIC COMMIT 1000 LOAD CSV WITH HEADERS "
+                        "FROM 'file:/follows.csv' AS row "
+                        "MATCH (m:Person {username: '"+username+"'}) "
+                        "MATCH (n:Person {id:row.id}) "
+                        "MERGE (m)-[r:FOLLOWS]->(n) "
+                        "return count(r)"
+                        )
 
-        return node_result
+            return node_result
+        else:
+            return -1
 
     # TODO only add if relation doensn't already exist
     def create_relation(self, from_username, to_username):
