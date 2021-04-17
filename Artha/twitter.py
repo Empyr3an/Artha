@@ -126,8 +126,8 @@ class TwitterAPI:
         return [str(i) for i in data]
 
     # returns generator of user's tweets
-    def get_tweets(self, user_name, cnt=500,
-                   start_date=None, tweet_fields=None):
+    def get_historical_tweets(self, user_name, cnt=500,
+                              start_date=None, tweet_fields=None):
 
         if not start_date:  # normally get twee from earliest history
             user_data = self.user_lookup(user_name, payload=["created_at"])
