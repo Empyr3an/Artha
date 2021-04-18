@@ -17,9 +17,13 @@ class TwitterAPI:
         self.endpoint1 = 'https://api.twitter.com/1.1'
         self.bearer = {"Authorization": "Bearer " + bearer_token}
         self.username = username
-        self.id = requests.get(self.endpoint2+"/users/by/username/"+username,
-                               headers=self.bearer).json()["data"]["id"]
-
+        try:
+            req = requests.get(self.endpoint2+"/users/by/username/"+username,
+                               headers=self.bearer)
+            self.id = req.json()["data"]["id"]
+        except Exception as e:
+            print(req.status_code)
+            raise e
         if key and secret and token and token_secret:
             self.oauth = OAuth1(key, secret, token, token_secret)
             self.content = {"Content-type": "application/json"}
@@ -125,7 +129,36 @@ class TwitterAPI:
 
         return [str(i) for i in data]
 
-    # returns generator of user's tweets
+    def get_recent_tweets(self,
+                          user_name,
+                          count=200,
+                          exclude_replies="true",
+                          include_rts="false"):
+
+        url = self.endpoint1+"/statuses/user_timeline.json?" +\
+                             "count=" + str(200) + "&" +\
+                             "trim_user=true&" +\
+                             "exclude_replies=" + exclude_replies + "&" +\
+                             "include_rts=" + include_rts + "&" +\
+                             "screen_name=" + user_name
+
+        req = requests.get(url, auth=self.oauth).json()
+        max_id = req[-1]["id"]-1
+        data = req
+
+        while True:
+            try:
+                req = requests.get(url+"&max_id="+str(max_id), 
+                                   auth=self.oauth)\
+                              .json()
+                max_id = req[-1]["id"]-1
+                data.extend(req)
+            except Exception:
+                break
+
+        return data
+
+    # returns generator of entire user's tweets
     def get_historical_tweets(self, user_name, cnt=500,
                               start_date=None, tweet_fields=None):
 
@@ -145,7 +178,7 @@ class TwitterAPI:
 
         try:
             req = requests.get(url, headers=self.bearer)
-            yield req.json()["data"]
+            return req.json()["data"]
         except Exception as e:
             raise e
 
