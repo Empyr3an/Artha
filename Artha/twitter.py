@@ -149,7 +149,7 @@ class TwitterAPI:
 
         while True:
             try:
-                req = requests.get(url+"&max_id="+str(max_id), 
+                req = requests.get(url+"&max_id="+str(max_id),
                                    auth=self.oauth)\
                               .json()
                 max_id = req[-1]["id"]-1
