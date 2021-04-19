@@ -132,11 +132,12 @@ class TwitterAPI:
     def get_recent_tweets(self,
                           user_name,
                           count=200,
-                          exclude_replies="true",
+                          exclude_replies="false",
                           include_rts="false"):
 
         url = self.endpoint1+"/statuses/user_timeline.json?" +\
                              "count=" + str(200) + "&" +\
+                             "tweet_mode=extended&" +\
                              "trim_user=true&" +\
                              "exclude_replies=" + exclude_replies + "&" +\
                              "include_rts=" + include_rts + "&" +\
