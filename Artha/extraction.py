@@ -63,6 +63,7 @@ def extract_crypto_names(sentence):
     return collections.Counter(tickers)
 
 
+# TODO fix cashtags, getting removed due to normalization
 def extract_cashtags(sentence):
     sen_words = normalize_sentence(sentence).split()
     symbols = [word for word in sen_words

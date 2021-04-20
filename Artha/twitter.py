@@ -129,6 +129,7 @@ class TwitterAPI:
 
         return [str(i) for i in data]
 
+    # TODO edit to get variable number of tweets
     def get_recent_tweets(self,
                           user_name,
                           count=200,
@@ -136,24 +137,28 @@ class TwitterAPI:
                           include_rts="false"):
 
         url = self.endpoint1+"/statuses/user_timeline.json?" +\
-                             "count=" + str(200) + "&" +\
+                             "count=" + str(count) + "&" +\
                              "tweet_mode=extended&" +\
                              "trim_user=true&" +\
                              "exclude_replies=" + exclude_replies + "&" +\
                              "include_rts=" + include_rts + "&" +\
                              "screen_name=" + user_name
 
-        req = requests.get(url, auth=self.oauth).json()
-        max_id = req[-1]["id"]-1
-        data = req
+        req = requests.get(url, auth=self.oauth)
+        try:
+            max_id = req.json()[-1]["id"]-1
+        except Exception:
+            print(user_name, "Has no tweets")
+            return -1
+        data = req.json()
 
         while True:
             try:
                 req = requests.get(url+"&max_id="+str(max_id),
-                                   auth=self.oauth)\
-                              .json()
-                max_id = req[-1]["id"]-1
-                data.extend(req)
+                                   auth=self.oauth)
+
+                max_id = req.json()[-1]["id"]-1
+                data.extend(req.json())
             except Exception:
                 break
 
