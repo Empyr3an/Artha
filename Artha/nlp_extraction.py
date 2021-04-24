@@ -13,7 +13,7 @@ config = {
 }
 
 with open("../data/crypto_tickers.json", "r") as w:
-    tickers = json.loads(w.read())
+    crypto_ticks = json.loads(w.read())
 
 nlp = spacy.load("en_core_web_sm")
 
@@ -24,9 +24,19 @@ nlp.add_pipe('spacytextblob')
 
 
 def get_tickers(doc):
+    # , 'nft', 'rss', 'pdf', 'agi', 'status'
     ignore = ['ath']
     tickers = [ent.text.strip() for ent in doc.ents if ent.label_ in ent_lab]
-    return [tick for tick in tickers if tick.lower() not in ignore]
+    tickers = [tick for tick in tickers if tick.lower() not in ignore]
+    count = 0
+    while len(tickers) > 0 and len(tickers) > count:
+        i = tickers[count]
+        if i not in crypto_ticks.keys() and i not in crypto_ticks.values():
+            tickers.pop(count)
+        else:
+            count += 1
+
+    return tickers
 
 
 Doc.set_extension("tickers", getter=get_tickers)
