@@ -1,12 +1,13 @@
-from Artha import twitter
-import config as c
+from Artha import twitter, configs
+from Artha.twitter import TwitterAPI
+from Artha.configs import twitter_config as c
 
-checkra = twitter.TwitterAPI(
-                bearer_token=c.c_bearer,
-                key=c.c_key,
-                secret=c.c_secret,
-                token=c.c_token,
-                token_secret=c.c_token_secret)
+checkra=TwitterAPI(username="checkra_",
+                     bearer_token=c.c_bearer,
+                     key=c.c_key,
+                     secret=c.c_secret,
+                     token=c.c_token,
+                     token_secret=c.c_token_secret)
 
 
 def test_user_lookup():

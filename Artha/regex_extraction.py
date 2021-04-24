@@ -29,15 +29,15 @@ too_common_tickers = ["ONE",
                       "KEY"]
 
 # ignore the following names
-too_common_names = ["JUST", "HONEST", "VERGE"]
+# too_common_names = ["JUST", "HONEST", "VERGE"]
 
-for i in too_common_tickers:
-    del tickers[i]
-for i in too_common_names:
-    for k, v in tickers.items():
-        if v == i:
-            del tickers[k]
-            break
+# for i in too_common_tickers:
+#     del tickers[i]
+# for i in too_common_names:
+#     for k, v in tickers.items():
+#         if v == i:
+#             del tickers[k]
+#             break
 # final lists to keep, capitalizes all tickers and names
 coin_ticks = [tick.upper() for tick in tickers.keys()]
 coin_names = [name.upper() for name in tickers.values()]
@@ -58,7 +58,7 @@ def extract_crypto_tickers(sentence):
 
 def extract_crypto_names(sentence):
 
-    sentence = " " + normalize_sentence(sentence) + " "
+    sentence = " " + normalize_sentence(sentence).upper() + " "
     tickers = [coin for coin in coin_names if " "+coin+" " in sentence]
     return collections.Counter(tickers)
 
