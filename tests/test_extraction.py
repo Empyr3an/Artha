@@ -22,14 +22,10 @@ def lists_equal(tickers, test_tickers):
     ("SPACs are just another way to raise money quick. Much like IPOs during the dot com bubble. Big bubble, bigger pop", []),
     ("Same, it is for the most part impossible, certain events can be predicted with higher hit rate than others. Life is just a gamble of probabilities.", []),
     ('''$KIN
-
-                        Sh*tty price action, but I feel like this is similar to that BTMX trade I had earlier this month that I exited way too early because I lost my patience.
-
-                        I will not make the same mistake twice.
-
-                        I know where this is headed.
-
-                        I will not miss it when it happens. https://t.co/WKeG8eg5UO''', [])
+        Sh*tty price action, but I feel like this is similar to that BTMX trade I had earlier this month that I exited way too early because I lost my patience.
+        I will not make the same mistake twice.
+        I know where this is headed.
+        I will not miss it when it happens. https://t.co/WKeG8eg5UO''', [])
 ])
 def test_ticker_extraction(test_string, real_tickers):
     test_tickers = nlp(test_string)._.tickers
