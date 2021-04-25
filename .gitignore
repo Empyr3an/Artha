@@ -8,3 +8,4 @@ Artha/configs
 notebooks/*.txt
 data/users/*
 !data/crypto_tickers.json
+notebooks/pandasPractice.ipynb
