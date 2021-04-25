@@ -4,7 +4,7 @@ from spacy.tokens import Doc
 import json
 
 
-ent_lab = ["ORG", "NORP"]
+ent_lab = ["ORG", "NORP", "MONEY"]
 
 config = {
     # "phrase_matcher_attr": "LOWER",
@@ -23,20 +23,23 @@ ruler.from_disk("../data/crypto_patterns.jsonl")
 nlp.add_pipe('spacytextblob')
 
 
-def get_tickers(doc):
-    # , 'nft', 'rss', 'pdf', 'agi', 'status'
-    ignore = ['ath']
+def get_crypto_tickers(doc):
+    ignore = ['ath', 'just', 'add', 'pdf', 'band',
+              'ramp', 'salt', 'nft', 'rss']
+
     tickers = [ent.text.strip() for ent in doc.ents if ent.label_ in ent_lab]
-    tickers = [tick for tick in tickers if tick.lower() not in ignore]
-    count = 0
-    while len(tickers) > 0 and len(tickers) > count:
-        i = tickers[count]
-        if i not in crypto_ticks.keys() and i not in crypto_ticks.values():
-            tickers.pop(count)
-        else:
-            count += 1
+    tickers = [tick for tick in tickers if tick not in ignore]
 
-    return tickers
+    final_tickers = []
+    for cur in tickers:
+
+        if cur in crypto_ticks.values():
+            final_tickers.append(cur)
+
+        elif cur.lower() in crypto_ticks.keys():
+            final_tickers.append(crypto_ticks[cur.lower()].upper())
+
+    return list(set(final_tickers))
 
 
-Doc.set_extension("tickers", getter=get_tickers)
+Doc.set_extension("tickers", getter=get_crypto_tickers)
