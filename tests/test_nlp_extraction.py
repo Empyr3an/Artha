@@ -1,4 +1,3 @@
-from Artha import nlp_extraction
 from Artha.nlp_extraction import *
 import pytest
 
