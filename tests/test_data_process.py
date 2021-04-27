@@ -1,4 +1,4 @@
-from Artha.data_management import *
+from Artha.data_process import *
 import pytest
 
 
