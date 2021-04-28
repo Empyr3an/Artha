@@ -4,9 +4,6 @@ from neo4j import GraphDatabase
 import sqlite3
 import csv
 
-path = "/Users/harshasomisetty/Library/Application Support/com.Neo4j.Relate/"\
-        "Data/dbmss/dbms-8c0b6b9b-8405-42f7-aee7-4bff9bf1d898/import/"\
-        "follows.csv"
 
 
 class Neo:
@@ -14,9 +11,11 @@ class Neo:
     def __init__(self, uri, username, password):
         self.driver = GraphDatabase.driver(uri, auth=(username, password))
         self.session = self.driver.session()
+        self.path = "/Users/harshasomisetty/Library/Application Support/"\
+                    "com.Neo4j.Relate/Data/dbmss/"\
+                    "dbms-8c0b6b9b-8405-42f7-aee7-4bff9bf1d898/import/"\
+                    "follows.csv"
         # automatically create unique id constraint
-        self.session.run('''CREATE CONSTRAINT twitter_id IF NOT EXISTS ON (n:Person)
-                            ASSERT n.id IS UNIQUE''')
 
     # TODO only add if node doensn't already exist
     def create_node(self, params):
@@ -34,7 +33,7 @@ class Neo:
         except Exception:
             return -1
 
-        with open(path, "w+") as csvfile:
+        with open(self.path, "w+") as csvfile:
             writer = csv.DictWriter(csvfile, fieldnames=[
                                                 "id",
                                                 "name",
@@ -44,9 +43,9 @@ class Neo:
             writer.writerows(temp_follows)
         return len(temp_follows)
 
-    def load_csv_data(self, username, location="../data/users"):
+    def load_follows_csv_data(self, username, location="../data/users"):
         if username == "checkra_":
-            self.update_csv_location(username, location="../data")
+            csv_length = self.update_csv_location(username, location="../data")
             self.session.run('''
                             Merge (n:Person {username: 'checkra_'})
                             ON CREATE SET n.id ='1356259499431129092',
@@ -93,12 +92,12 @@ class Neo:
 
         return [record for record in result]
 
-    def check_relation(self, from_id, to_id):
-        result = self.session.run("MATCH (n:Person {id: $from_id})-[r]-> "
-                                  "(m:Person {id: $to_id})"
-                                  "RETURN n,type(r),m",
-                                  from_id=from_id, to_id=to_id)
-        return [record for record in result]
+    # def check_relation(self, from_id, to_id):
+    #     result = self.session.run("MATCH (n:Person {id: $from_id})-[r]-> "
+    #                               "(m:Person {id: $to_id})"
+    #                               "RETURN n,type(r),m",
+    #                               from_id=from_id, to_id=to_id)
+    #     return [record for record in result]
 
     def clear_db(self):
         self.session.run("MATCH (n) DETACH DELETE (n)")

@@ -7,12 +7,8 @@ key = c.apis[0][0]
 secret = c.apis[0][1]
 client = Client(key, secret)
 
-
-def date_to_milli(indexes):
-    dates = indexes.index.to_pydatetime()
-    # print(dates)
-    return str(dates[-1].timestamp()*1000), str(dates[0].timestamp()*1000)
-
+base3_markets = ["BTC", "BNB", 'ETH', 'TRX', 'XRP']+['AUD', 'BRL', 'EUR', 'GBP', 'RUB', 'TRY', 'PAX', 'DAI', 'UAH', 'NBN', 'VAI']
+base4_markets = ['USDT', 'USDC', 'BUSD', 'IDRT', 'BIDR', 'BVND', 'TUSD']
 
 def _date_to_twitter(date):
     obj = datetime.fromtimestamp(date/1000.0)
@@ -39,3 +35,31 @@ def get_klines_df(klines):
                                     end=_date_to_twitter(klines[-1][0]),
                                     periods=len(klines)),
                 columns=columns)
+
+def get_invert_dict(d):
+    inverse = dict()
+    for key in d:
+        # Go through the list that is saved in the dict:
+        for item in d[key]:
+            # Check if in the inverted dict the key exists
+            if item not in inverse:
+                # If not create a new list
+                inverse[item] = {}
+                inverse[item]["markets"] = [key]
+            else:
+                inverse[item]["markets"].append(key)
+    return inverse
+
+
+def get_market_dict():
+    all_tickers = client.get_ticker()
+    all_ticker_symbols = [i["symbol"] for i in all_tickers]
+    markets = {}
+
+    for base in base3_markets:
+        markets[base] = [i[:-3] for i in all_ticker_symbols if i[-3:]==base]
+
+    for base in base4_markets:
+        markets[base] = [i[:-4] for i in all_ticker_symbols if i[-4:]==base]
+    return markets
+

@@ -78,6 +78,6 @@ def _get_tweet_scores(docs, ticker, trim):
 def tweet_df(docs, ticker=None, trim=True):
     tweet_scores = _get_tweet_scores(docs, ticker, trim)
     tweet_times = pd.to_datetime([i[0] for i in tweet_scores])
-    return pd.DataFrame([i[1] for i in tweet_scores],
+    return pd.DataFrame([[i[1], i[2]] for i in tweet_scores],
                         index=tweet_times,
-                        columns=["Sentiment"])
+                        columns=["Sentiment", "Tweet_num"])
