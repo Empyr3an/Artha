@@ -870,7 +870,7 @@ class Client(object):
         :return: list of OHLCV values
 
         """
-        return self._historical_klines(symbol, interval, start_str, end_str=None, limit=500, spot=True)
+        return self._historical_klines(symbol, interval, start_str, end_str, limit, spot=True)
 
     def _historical_klines(self, symbol, interval, start_str, end_str=None,
                            limit=500, spot=True):
@@ -908,8 +908,8 @@ class Client(object):
         timeframe = interval_to_milliseconds(interval)
 
         # convert our date strings to milliseconds
-        if type(start_str) == int:
-            start_ts = start_str
+        if type(start_str) == int or type(start_str) == float:
+            start_ts = int(start_str)
         else:
             start_ts = date_to_milliseconds(start_str)
 
@@ -920,8 +920,8 @@ class Client(object):
         # if an end time was passed convert it
         end_ts = None
         if end_str:
-            if type(end_str) == int:
-                end_ts = end_str
+            if type(end_str) == int or type(end_str) == float:
+                end_ts = int(end_str)
             else:
                 end_ts = date_to_milliseconds(end_str)
 
