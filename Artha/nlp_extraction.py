@@ -3,6 +3,8 @@ from spacytextblob.spacytextblob import SpacyTextBlob
 from spacy.tokens import Doc
 import json
 from vaderSentiment.vaderSentiment import SentimentIntensityAnalyzer
+import Artha.data_process as dp
+from datetime import datetime
 
 analyzer = SentimentIntensityAnalyzer()
 
@@ -25,12 +27,13 @@ ruler.from_disk("../data/binance_patterns.jsonl")
 nlp.add_pipe('spacytextblob')
 
 
-def get_crypto_tickers(doc):
+def _get_crypto_tickers(doc):
     ignore = ['ath', 'just', 'add', 'pdf', 'band',
-              'ramp', 'salt', 'nft', 'rss']
+              'ramp', 'salt', 'nft', 'rss', 'iq',
+              'triggers', 'og', 'win', 'auto']
 
-    tickers = [ent.text.strip() for ent in doc.ents if ent.label_ in ent_lab]
-    tickers = [tick for tick in tickers if tick not in ignore]
+    tickers = [ent.text.strip() for ent in doc.ents if ent.label_ in ent_lab and ent.text.lower() not in ignore]
+    # tickers = [tick for tick in tickers if tick not in ignore]
 
     final_tickers = []
     for cur in tickers:
@@ -44,15 +47,28 @@ def get_crypto_tickers(doc):
     return list(set(final_tickers))
 
 
-Doc.set_extension("tickers", getter=get_crypto_tickers)
+Doc.set_extension("tickers", getter=_get_crypto_tickers)
 Doc.set_extension("tweet_id", default=False)
 Doc.set_extension("tweeted_at", default=False)
 
 
+def run_pipeline(username):
+    tweets = dp.load_tweets(username)
+    tweet_text = dp.clean_tweets(tweets)
 
-def get_polarity(text):
-    return analyzer.polarity_scores(text)
+    docs = []
+    for doc, context in nlp.pipe(tweet_text, as_tuples=True, n_process=-1): # need to disable pipes to run faster
 
-def print_polarity(text):
-    vs = get_polarity(text)
-    print("{:-<65} {}\n\n".format(text, str(vs)))
+        doc._.tweet_id = context["id"]
+        doc._.tweeted_at = datetime.strftime(datetime.strptime(context["created_at"],'%a %b %d %H:%M:%S +0000 %Y'), '%m/%d/%Y %H:%M:%S')
+        docs.append(doc)
+
+    return docs
+
+
+# def get_polarity(text):
+#     return analyzer.polarity_scores(text)
+
+# def print_polarity(text):
+#     vs = get_polarity(text)
+#     print("{:-<65} {}\n\n".format(text, str(vs)))
