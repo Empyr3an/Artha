@@ -59,9 +59,13 @@ def run_pipeline(username):
     docs = []
     for doc, context in nlp.pipe(tweet_text, as_tuples=True, n_process=-1): # need to disable pipes to run faster
 
-        doc._.tweet_id = context["id"]
-        doc._.tweeted_at = datetime.strftime(datetime.strptime(context["created_at"],'%a %b %d %H:%M:%S +0000 %Y'), '%m/%d/%Y %H:%M:%S')
-        docs.append(doc)
+        if doc._.tickers:
+            doc._.tweet_id = context["id"]
+            doc._.tweeted_at = datetime.strftime(
+                datetime.strptime(context["created_at"],
+                                  '%a %b %d %H:%M:%S +0000 %Y'),
+                '%m/%d/%Y %H:%M:%S')
+            docs.append(doc)
 
     return docs
 
