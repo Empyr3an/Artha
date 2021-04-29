@@ -2,14 +2,15 @@
 # import matplotlib.pyplot as plt
 # import time
 import json
-import contractions
-from datetime import datetime, timedelta
-import pandas as pd
+from contractions import fix
+from datetime import datetime
+# from datetime import datetime, timedelta
+# import pandas as pd
 
 
 def clean_text(text):
-    return contractions.fix(text.replace("&amp;", "and")
-                                .replace("@", ""))
+    return fix(text.replace("&amp;", "and")
+                   .replace("@", ""))
 
 
 def load_tweets(username):
@@ -17,12 +18,9 @@ def load_tweets(username):
         return json.load(r)
 
 
-def remove_first_tags(text):
+def remove_tags(text):
     if text and text[0] == "@":
-        if " " in text:
-            return remove_first_tags(text.split(" ", 1)[1])
-        else:
-            return ""
+        return remove_tags(text.split(" ", 1)[1]) if " " in text else ""
     else:
         return text
 
@@ -31,7 +29,8 @@ def clean_tweets(tweets):
     tweet_text = []
     # strips initial tweet mentions to only store text
     for ind, tweet in enumerate(tweets):
-        sent = remove_first_tags(tweet["full_text"]).replace("@", "")
+        sent = clean_text(tweet["full_text"])
+
         if not sent:
             tweets.pop(ind)
         else:
@@ -47,37 +46,6 @@ def clean_tweets(tweets):
     return tweet_text
 
 
-def _get_tweet_scores(docs, ticker, trim):
-    tweet_scores = [[doc._.tweeted_at, doc._.polarity, ind] for ind, doc in enumerate(docs)]
-
-    if ticker:
-        to_remove = [ind for ind, doc in enumerate(docs) if ticker not in doc._.tickers]
-        for i in sorted(to_remove, reverse=True):
-            del tweet_scores[i]
-
-    i = 0
-    if trim:
-        while i < len(tweet_scores)-1:
-            cur_tweet = tweet_scores[i]
-            next_tweet = tweet_scores[i+1]
-
-            cur_time = datetime.strptime(cur_tweet[0], '%m/%d/%Y %H:%M:%S')
-            next_time = datetime.strptime(next_tweet[0], '%m/%d/%Y %H:%M:%S')
-
-            time_diff = cur_time-next_time
-
-            if time_diff < timedelta(seconds=5):
-                tweet_scores[i][1] = (cur_tweet[1]+next_tweet[1])/2
-                del tweet_scores[i+1]
-            else:
-                i += 1
-
-    return tweet_scores
-
-
-def tweet_df(docs, ticker=None, trim=True):
-    tweet_scores = _get_tweet_scores(docs, ticker, trim)
-    tweet_times = pd.to_datetime([i[0] for i in tweet_scores])
-    return pd.DataFrame([[i[1], i[2]] for i in tweet_scores],
-                        index=tweet_times,
-                        columns=["Sentiment", "Tweet_num"])
+def time_diff(date_string):
+    time = datetime.now() - datetime.strptime(date_string, '%m/%d/%Y %H:%M:%S')
+    return time.days + (time.seconds+time.microseconds/(10**6))/86400

@@ -1,12 +1,15 @@
 import spacy
-from spacytextblob.spacytextblob import SpacyTextBlob
 from spacy.tokens import Doc
 import json
-from vaderSentiment.vaderSentiment import SentimentIntensityAnalyzer
 import Artha.data_process as dp
 from datetime import datetime
+import numpy as np
+from collections import Counter
+from tqdm import tqdm
 
-analyzer = SentimentIntensityAnalyzer()
+# from spacytextblob.spacytextblob import SpacyTextBlob
+# from vaderSentiment.vaderSentiment import SentimentIntensityAnalyzer
+# analyzer = SentimentIntensityAnalyzer()
 
 ent_lab = ["ORG", "NORP", "MONEY"]
 
@@ -24,7 +27,7 @@ nlp = spacy.load("en_core_web_sm")
 ruler = nlp.add_pipe("entity_ruler", config=config)
 ruler.from_disk("../data/binance_patterns.jsonl")
 
-nlp.add_pipe('spacytextblob')
+# nlp.add_pipe('spacytextblob')
 
 
 def _get_crypto_tickers(doc):
@@ -57,7 +60,7 @@ def run_pipeline(username):
     tweet_text = dp.clean_tweets(tweets)
 
     docs = []
-    for doc, context in nlp.pipe(tweet_text, as_tuples=True, n_process=-1): # need to disable pipes to run faster
+    for doc, context in nlp.pipe(tweet_text, as_tuples=True, n_process=-1):  # need to disable pipes to run faster
 
         if doc._.tickers:
             doc._.tweet_id = context["id"]
@@ -70,9 +73,28 @@ def run_pipeline(username):
     return docs
 
 
-# def get_polarity(text):
-#     return analyzer.polarity_scores(text)
+def get_mention_scores(username, docs):
+    def expo_func(x): return np.exp(-.07*x)
 
-# def print_polarity(text):
-#     vs = get_polarity(text)
-#     print("{:-<65} {}\n\n".format(text, str(vs)))
+    all_ticks = Counter([tick for doc in docs
+                         for tick in doc._.tickers]).most_common()
+
+    tick_dict = {tick[0]: index for index, tick in enumerate(all_ticks)}
+
+    mentions = np.zeros((len(tick_dict), len(docs)))
+
+    # fill in values of dict lists where ticker is mentioned
+    for ind, doc in tqdm(enumerate(docs)):
+        for tick in doc._.tickers:
+            mentions[tick_dict[tick]][ind] += 1
+
+    # function of array of tweet times
+    tweet_times = np.array([dp.time_diff(doc._.tweeted_at) for doc in docs])
+    tweet_times = expo_func(tweet_times.reshape((len(docs), 1)))
+
+    # multiply matrix of mentions by time vector
+    mul = np.matmul(mentions, tweet_times)\
+            .round(5).reshape(1, len(all_ticks))[0]
+
+    # list of edges to add
+    return list(zip([username] * len(docs), list(tick_dict.keys()), mul))

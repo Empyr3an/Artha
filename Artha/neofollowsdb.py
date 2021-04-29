@@ -5,7 +5,6 @@ import sqlite3
 import csv
 
 
-
 class Neo:
 
     def __init__(self, uri, username, password):

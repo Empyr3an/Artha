@@ -10,6 +10,7 @@ client = Client(key, secret)
 base3_markets = ["BTC", "BNB", 'ETH', 'TRX', 'XRP']+['AUD', 'BRL', 'EUR', 'GBP', 'RUB', 'TRY', 'PAX', 'DAI', 'UAH', 'NBN', 'VAI']
 base4_markets = ['USDT', 'USDC', 'BUSD', 'IDRT', 'BIDR', 'BVND', 'TUSD']
 
+
 def _date_to_twitter(date):
     obj = datetime.fromtimestamp(date/1000.0)
     return "%s/%s/%s %s:%s:%s" % (obj.month, obj.day, obj.year,
@@ -36,6 +37,7 @@ def get_klines_df(klines):
                                     periods=len(klines)),
                 columns=columns)
 
+
 def get_invert_dict(d):
     inverse = dict()
     for key in d:
@@ -57,9 +59,8 @@ def get_market_dict():
     markets = {}
 
     for base in base3_markets:
-        markets[base] = [i[:-3] for i in all_ticker_symbols if i[-3:]==base]
+        markets[base] = [i[:-3] for i in all_ticker_symbols if i[-3:] == base]
 
     for base in base4_markets:
-        markets[base] = [i[:-4] for i in all_ticker_symbols if i[-4:]==base]
+        markets[base] = [i[:-4] for i in all_ticker_symbols if i[-4:] == base]
     return markets
-
