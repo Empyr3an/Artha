@@ -4,6 +4,8 @@ from requests_oauthlib import OAuth1
 import numpy as np
 import json
 from tqdm import tqdm
+import time
+import csv
 # from configs import twitter_config as c
 
 
@@ -80,54 +82,74 @@ class TwitterAPI:
                 follows_data[len(follows_data)-1:
                              len(follows_data)-1] = req.json()["data"]
 
-        return follows_data
+        # need to filter dicts because of weird withheld field appearing
+        return [{key: dic[key] for key in payload} for dic in follows_data]
+
+    def get_following(self, username):  # use both endpoints for rate limit
+
+        follows = self._get_following1(username)
+        if isinstance(follows, int):
+            return self._get_following2(username)
+        else:
+            return follows
+
+            # while user_follows == -1:  #check if too many requests
+            #     print("Too many requests")
 
     # for given user, return list of all ids user follows, endpt2
-    def get_following2(self, user_name):
-        user_id = self.user_lookup(user_name)["id"]
+    def _get_following2(self, username):
+        user_id = self.user_lookup(username)["id"]
         url = self.endpoint2 + "/users/" + user_id +\
                                "/following?max_results=1000"
 
         data = []
 
         req = requests.get(url, headers=self.bearer)
-        # return req
+
         if req.status_code != 200:
             return req.status_code
-        data = req.json()["data"]
 
-        while "next_token" in req.json()["meta"]:
-            req = requests.get(url+"&pagination_token=" +
-                               req.json()["meta"]["next_token"],
-                               headers=self.bearer)
+        if "data" not in req.json().keys(): 
+            return []
+        else:
+            data = req.json()["data"]
 
-            if req.status_code != 200:
-                return req.status_code
+            while "next_token" in req.json()["meta"]:
+                req = requests.get(url+"&pagination_token=" +
+                                   req.json()["meta"]["next_token"],
+                                   headers=self.bearer)
 
-            data[len(data)-1:len(data)-1] = req.json()["data"]
+                if req.status_code != 200:
+                    return req.status_code
 
-        return [str(i["id"]) for i in data]
+                data[len(data)-1:len(data)-1] = req.json()["data"]
+
+            return [str(i["id"]) for i in data]
 
     # for given user, return list of all ids user follows, endpt1
-    def get_following1(self, user_name):
+    def _get_following1(self, username):
         url = self.endpoint1 + ("/friends/ids.json?" +
                                 "&count=5000" +
-                                "&screen_name=" + user_name)
+                                "&screen_name=" + username)
 
         req = requests.get(url, auth=self.oauth)
         if req.status_code != 200:
             return req.status_code
-        data = req.json()["ids"]
 
-        while req.json()["next_cursor"] > -1:
-            req = requests.get(url+"&cursor=" +
-                               req.json()["next_cursor_str"],
-                               auth=self.oauth)
-            if req.status_code != 200:
-                return req.status_code
-            data[len(data)-1:len(data)-1] = req.json()["ids"]
+        if "ids" not in req.json().keys():
+            return []
+        else:    
+            data = req.json()["ids"]
 
-        return [str(i) for i in data]
+            while req.json()["next_cursor"] > -1:
+                req = requests.get(url+"&cursor=" +
+                                   req.json()["next_cursor_str"],
+                                   auth=self.oauth)
+                if req.status_code != 200:
+                    return req.status_code
+                data[len(data)-1:len(data)-1] = req.json()["ids"]
+
+            return [str(i) for i in data]
 
     # TODO edit to get variable number of tweets
     def get_recent_tweets(self,
@@ -168,7 +190,7 @@ class TwitterAPI:
     def get_historical_tweets(self, user_name, cnt=500,
                               start_date=None, tweet_fields=None):
 
-        if not start_date:  # normally get twee from earliest history
+        if not start_date:  # normally get tweets from earliest history
             user_data = self.user_lookup(user_name, payload=["created_at"])
             start_date = user_data["created_at"]
 
@@ -244,15 +266,48 @@ class TwitterAPI:
                             auth=self.oauth).json()
 
     # gets latest 20 tweets
-    def home_timeline(self, count=200):
-        return requests.get(self.endpoint1+"/statuses/home_timeline.json",
-                            auth=self.oauth).json()
+    def home_timeline(self, count=200,
+                      exclude_replies="true",
+                      include_entities="false"):
+
+        url = self.endpoint1 +\
+              "/statuses/home_timeline.json?" +\
+              "count=" + str(count) + "&" +\
+              "tweet_mode=extended&" +\
+              "trim_user=true&" +\
+              "exclude_replies=" + exclude_replies + "&" +\
+              "include_entities=" + include_entities
+        return requests.get(url, auth=self.oauth).json()
 
     # check for valid authorization
     def test_auth(self):
         return requests.get(self.endpoint2+"/tweets?ids=1228393702244134912",
                             headers=self.bearer).status_code
 
+
+def update_follow_data(username, twitter):
+    user_follows = twitter.get_following(username)
+
+    while isinstance(user_follows, int):
+        print("Too many following requests")
+        time.sleep(420)
+        user_follows = twitter.get_following(username)
+
+    follows_data = []
+    if user_follows:
+        # print(user_follows)
+        follows_data = twitter.multiple_user_lookup(user_follows, ['id', 'name', 'username'])
+
+        while isinstance(follows_data, int):
+            print("Too many requests for multi")
+            time.sleep(30)
+            user_follows = twitter.multiple_user_lookup(user_follows, ['id', 'name', 'username'])
+
+    with open("../data/follows/u"+username+".csv", "w+") as csvfile:
+        writer = csv.DictWriter(csvfile, fieldnames=["id", 'name', 'username'])
+        writer.writeheader()
+        for data in follows_data:
+            writer.writerow(data)
 
 # error_codes = {
 #                 200: "OK",

@@ -21,9 +21,25 @@ class Neo:
             cw.writerows([[key] for ind, key in
                           enumerate(list(inv_markets.keys()))])
         self.session.run('''USING PERIODIC COMMIT 1000 LOAD CSV WITH HEADERS
-                                FROM 'file:/coins.csv' AS row
-                                MERGE (n:Coin {name:row.Name})''')
+                            FROM 'file:/coins.csv' AS row
+                            MERGE (n:Coin {name:row.Name})''')
         print("Updated coins")
+
+    def load_mentions_data(self, mentions):
+
+        with open(self.path+'mentions.csv', 'w+') as out:
+            csv_out = csv.writer(out)
+            csv_out.writerow(['username', 'coin', 'weight'])
+            for row in mentions:
+                csv_out.writerow(row)
+
+        self.session.run('''USING PERIODIC COMMIT 1000 LOAD CSV WITH HEADERS
+                            FROM 'file:/mentions.csv' AS row
+                            MATCH (n:Coin {name:row.coin})
+                            MERGE (m:Person {username:row.username})
+                            Merge (m)-[r:MENTION {weight:row.weight}]->(n)
+                         ''')
+
 
     def clear_db(self):
         self.session.run("MATCH (n) DETACH DELETE (n)")
@@ -36,3 +52,5 @@ class Neo:
     def get_relations(self):
         relations = self.session.run("MATCH (n)-[r]-> (m) RETURN n, r, m")
         return [record["r"] for record in relations]
+
+

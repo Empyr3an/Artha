@@ -24,7 +24,7 @@ with open("../data/binance_tickers.json", "r") as w:
 
 nlp = spacy.load("en_core_web_sm")
 
-ruler = nlp.add_pipe("entity_ruler", config=config)
+ruler = nlp.add_pipe("entity_ruler", config=config, after="ner")
 ruler.from_disk("../data/binance_patterns.jsonl")
 
 # nlp.add_pipe('spacytextblob')
@@ -60,15 +60,18 @@ def run_pipeline(username):
     tweet_text = dp.clean_tweets(tweets)
 
     docs = []
-    for doc, context in nlp.pipe(tweet_text, as_tuples=True, n_process=-1):  # need to disable pipes to run faster
+    with nlp.select_pipes(disable=["tagger", "parser", "lemmatizer"]):
+        for doc, context in nlp.pipe(tweet_text,
+                                     as_tuples=True,
+                                     n_process=-1):
 
-        if doc._.tickers:
-            doc._.tweet_id = context["id"]
-            doc._.tweeted_at = datetime.strftime(
-                datetime.strptime(context["created_at"],
-                                  '%a %b %d %H:%M:%S +0000 %Y'),
-                '%m/%d/%Y %H:%M:%S')
-            docs.append(doc)
+            if doc._.tickers:
+                # doc._.tweet_id = context["id"]
+                doc._.tweeted_at = datetime.strftime(
+                    datetime.strptime(context["created_at"],
+                                      '%a %b %d %H:%M:%S +0000 %Y'),
+                    '%m/%d/%Y %H:%M:%S')
+                docs.append(doc)
 
     return docs
 

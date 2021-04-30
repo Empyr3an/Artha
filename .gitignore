@@ -6,6 +6,6 @@
 !README.txt
 Artha/configs
 notebooks/*.txt
-data/users/*
-!data/crypto_tickers.json
-notebooks/pandasPractice.ipynb
+data/follows/*
+data/tweets/*
+archive/*
