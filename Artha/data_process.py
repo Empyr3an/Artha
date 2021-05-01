@@ -4,9 +4,8 @@
 import json
 from contractions import fix
 from datetime import datetime
+import csv
 # from datetime import datetime, timedelta
-# import pandas as pd
-
 
 def clean_text(text):
     return fix(text.replace("&amp;", "and")
@@ -17,6 +16,12 @@ def load_tweets(username):
     with open("../data/tweets/u"+username+"tweets.json", "r") as r:
         return json.load(r)
 
+def load_following(username):
+    with open("../data/follows/u"+username+".csv", "r") as csvfile:
+        reader = csv.reader(csvfile, delimiter=',', )
+        next(reader, None)
+        follows = list(reader)
+        return [[username]+l for l in follows]
 
 def remove_tags(text):
     if text and text[0] == "@":
