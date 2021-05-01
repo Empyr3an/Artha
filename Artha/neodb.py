@@ -42,7 +42,7 @@ class Neo:
 
         return len(data)
 
-    def load_follows(self, data):
+    def load_follow_nodes(self, data):
         length = self.update_follows_csv(data)
 
         if length > 0:
@@ -62,7 +62,8 @@ class Neo:
         else:
             return -1
 
-    def load_relations(self, data):
+    # TODO add weight for number of people a person follows
+    def load_follow_relations(self, data):
         length = self.update_follows_csv(data)
 
         if length > 0:
@@ -106,38 +107,38 @@ class Neo:
                     ''')
             return [r for r in result]
 
-    def create_coinMentions_view(self):
+    # def create_coinMentions_view(self):
 
-        self.session.run('''
-            CALL gds.graph.create(
-                'coinMentions',
-                ['Person', 'Coin'],
-                "CALLOUT",
-                {
-                    relationshipProperties: 'weight'
-                }
-            )
-                         ''')
+    #     self.session.run('''
+    #         CALL gds.graph.create(
+    #             'coinMentions',
+    #             ['Person', 'Coin'],
+    #             "CALLOUT",
+    #             {
+    #                 relationshipProperties: 'weight'
+    #             }
+    #         )
+    #                      ''')
 
-    def drop_coinMentions_view(self):
-        self.session.run('''
-            CALL gds.graph.drop('coinMentions') YIELD graphName;
-                        ''')
+    # def drop_coinMentions_view(self):
+    #     self.session.run('''
+    #         CALL gds.graph.drop('coinMentions') YIELD graphName;
+    #                     ''')
 
-    def page_rank(self):
+    # def page_rank(self):
 
-        page_rank_result = self.session.run('''
-            CALL gds.pageRank.stream('coinMentions', {
-            maxIterations: 20,
-            dampingFactor: 0.85,
-            relationshipWeightProperty: 'weight'
-            })
-            YIELD nodeId, score
-            RETURN gds.util.asNode(nodeId).name AS name, score
-            ORDER BY score DESC, name ASC
-                        ''')
+    #     page_rank_result = self.session.run('''
+    #         CALL gds.pageRank.stream('coinMentions', {
+    #         maxIterations: 20,
+    #         dampingFactor: 0.85,
+    #         relationshipWeightProperty: 'weight'
+    #         })
+    #         YIELD nodeId, score
+    #         RETURN gds.util.asNode(nodeId).name AS name, score
+    #         ORDER BY score DESC, name ASC
+    #                     ''')
 
-        return page_rank_result
+    #     return page_rank_result
 
     def clear_db(self):
         self.session.run("MATCH (n) DETACH DELETE (n)")

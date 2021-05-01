@@ -13,6 +13,7 @@ def load_tweets(username):
         return json.load(r)
 
 
+# sample output: ['checkra_', '995500158417711104', 'Loma', 'LomahCrypto']
 def load_following(username):
     with open("../data/follows/u"+username+".csv", "r") as csvfile:
         reader = csv.reader(csvfile, delimiter=',', )
