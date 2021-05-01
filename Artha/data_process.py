@@ -9,7 +9,7 @@ import csv
 
 
 def load_tweets(username):
-    with open("../data/tweets/u"+username+"tweets.json", "r") as r:
+    with open("../data/tweets/u"+username+".json", "r") as r:
         return json.load(r)
 
 
