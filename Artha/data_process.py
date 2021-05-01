@@ -2,32 +2,36 @@
 # import matplotlib.pyplot as plt
 # import time
 import json
-from contractions import fix
+import contractions
 from datetime import datetime
 import csv
 # from datetime import datetime, timedelta
-
-def clean_text(text):
-    return fix(text.replace("&amp;", "and")
-                   .replace("@", ""))
 
 
 def load_tweets(username):
     with open("../data/tweets/u"+username+"tweets.json", "r") as r:
         return json.load(r)
 
+
 def load_following(username):
     with open("../data/follows/u"+username+".csv", "r") as csvfile:
         reader = csv.reader(csvfile, delimiter=',', )
         next(reader, None)
         follows = list(reader)
-        return [[username]+l for l in follows]
+        return [[username]+follow for follow in follows]
+
 
 def remove_tags(text):
     if text and text[0] == "@":
         return remove_tags(text.split(" ", 1)[1]) if " " in text else ""
     else:
         return text
+
+
+def clean_text(text): return contractions.fix(
+                                    remove_tags(text)
+                                    .replace("&amp;", "and")
+                                    .replace("@", ""))
 
 
 def clean_tweets(tweets):

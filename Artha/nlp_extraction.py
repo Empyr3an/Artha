@@ -35,7 +35,8 @@ def _get_crypto_tickers(doc):
               'ramp', 'salt', 'nft', 'rss', 'iq',
               'triggers', 'og', 'win', 'auto']
 
-    tickers = [ent.text.strip() for ent in doc.ents if ent.label_ in ent_lab and ent.text.lower() not in ignore]
+    tickers = [ent.text.strip() for ent in doc.ents
+               if ent.label_ in ent_lab and ent.text.lower() not in ignore]
     # tickers = [tick for tick in tickers if tick not in ignore]
 
     final_tickers = []

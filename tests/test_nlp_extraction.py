@@ -10,7 +10,7 @@ def lists_equal(tickers, test_tickers):
     ("Will send us into a whirlwind and a lot of tensions between countries will ramp up.", []),
     ("$BNB funding is still negative. Basically getting paid to buy the USD dip as the BTC pair approaches a new all time high.", ["BNB", "USD", "BTC"]),
     ("Also, memes is an extreme word considering the utility / ecosystem difference between XRP and BNB.", ["XRP", "BNB"]),
-    ("Bitcoin is $1,000 lower than it was yesterday at this time, and alts are all printing higher highs across the board led by Ethereum.\n\nThis is the moment we've been waiting for.\n\nSalt szn is over. Alt szn is here.", ["BTC", "SALT", "ETH"]), # TODO salt should not be included
+    ("Bitcoin is $1,000 lower than it was yesterday at this time, and alts are all printing higher highs across the board led by Ethereum.\n\nThis is the moment we've been waiting for.\n\nSalt szn is over. Alt szn is here.", ["BTC", "ETH"]), # TODO salt should not be included
     ("LITECOIN PLEASE ACTUALLY DO SOMETHING THIS TIME, I LOVE LTC", ["LTC"]), # Love must not be a ticker
     ("Low sats like HOT, DENT, SRN, etc. are all moving higher, and you don't think $BTT will follow?", ["HOT", "DENT", "BTT"]), #srn not on binance
     ("Bitcoin looks exhausted on weekly. 44k looks like it could be hit. Middle BB band is key, we close below band, 33k is next weekly support.", ["BTC"]), #"BTC"

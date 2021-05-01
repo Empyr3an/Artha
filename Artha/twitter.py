@@ -109,7 +109,7 @@ class TwitterAPI:
         if req.status_code != 200:
             return req.status_code
 
-        if "data" not in req.json().keys(): 
+        if "data" not in req.json().keys():
             return []
         else:
             data = req.json()["data"]
@@ -138,7 +138,7 @@ class TwitterAPI:
 
         if "ids" not in req.json().keys():
             return []
-        else:    
+        else:
             data = req.json()["ids"]
 
             while req.json()["next_cursor"] > -1:
@@ -259,7 +259,6 @@ class TwitterAPI:
         except Exception as e:
             return e
 
-# TODO add method to get usernames of multiple people at once
     def rate_limits(self):
         return requests.get(self.endpoint1 +
                             "/application/rate_limit_status.json",
@@ -295,13 +294,15 @@ def update_follow_data(username, twitter):
 
     follows_data = []
     if user_follows:
-        # print(user_follows)
-        follows_data = twitter.multiple_user_lookup(user_follows, ['id', 'name', 'username'])
+        follows_data = twitter.multiple_user_lookup(user_follows,
+                                                    ['id', 'name', 'username'])
 
         while isinstance(follows_data, int):
             print("Too many requests for multi")
             time.sleep(30)
-            user_follows = twitter.multiple_user_lookup(user_follows, ['id', 'name', 'username'])
+            user_follows = twitter\
+                .multiple_user_lookup(user_follows,
+                                      ['id', 'name', 'username'])
 
     with open("../data/follows/u"+username+".csv", "w+") as csvfile:
         writer = csv.DictWriter(csvfile, fieldnames=["id", 'name', 'username'])

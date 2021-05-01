@@ -12,9 +12,6 @@ class Neo:
                     "com.Neo4j.Relate/Data/dbmss/"\
                     "dbms-0dd5b437-acbf-4425-b485-3d197ae3db89/import/"
 
-                    # "dbms-8c0b6b9b-8405-42f7-aee7-4bff9bf1d898/import/"\
-                    # "follows.csv"
-
     def update_coins_data(self):
         markets = crypto.get_market_dict()
         inv_markets = crypto.get_invert_dict(markets)
@@ -47,7 +44,7 @@ class Neo:
 
     def load_follows(self, data):
         length = self.update_follows_csv(data)
- 
+
         if length > 0:
             # insert all nodes from csv
             self.session.run('''

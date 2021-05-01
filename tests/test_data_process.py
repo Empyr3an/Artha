@@ -1,4 +1,5 @@
 from Artha.data_process import *
+# import Artha
 import pytest
 
 
@@ -9,5 +10,5 @@ import pytest
     ("@test1 @test2", ""),
     ("@test1 @test2 @test3", ""),
 ])
-def test_remove_first_tag(initial_text, trimmed_text):
-    assert remove_first_tags(initial_text) == trimmed_text
+def test_remove_tags(initial_text, trimmed_text):
+    assert remove_tags(initial_text) == trimmed_text
