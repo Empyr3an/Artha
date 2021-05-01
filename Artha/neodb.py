@@ -47,7 +47,7 @@ class Neo:
 
         if length > 0:
             # insert all nodes from csv
-            self.session.run('''
+            follow_result = self.session.run('''
                         USING PERIODIC COMMIT 1000 LOAD CSV WITH HEADERS
                         FROM 'file:/follows.csv' AS row
                         MERGE (n:Person {id:row.id})
@@ -55,8 +55,17 @@ class Neo:
                                     n.name = row.name,
                                     n.username = row.username
                         ''')
-            print("Finished nodes")
+            print("loaded People")
             # create all edges
+
+            return follow_result
+        else:
+            return -1
+
+    def load_relations(self, data):
+        length = self.update_follows_csv(data)
+
+        if length > 0:
             node_result = self.session.run('''
                         USING PERIODIC COMMIT 1000 LOAD CSV WITH HEADERS
                         FROM 'file:/follows.csv' AS row
@@ -64,8 +73,8 @@ class Neo:
                         MATCH (n:Person {id:row.id})
                         MERGE (m)-[r:FOLLOWS]->(n)
                         return count(r)
-                        ''')
-
+                    ''')
+            print("loaded relations")
             return node_result
         else:
             return -1
@@ -87,14 +96,15 @@ class Neo:
         length = self.update_mentions_data(data)
 
         if length > 0:
-            self.session.run('''
-                    USING PERIODIC COMMIT 1000 LOAD CSV WITH HEADERS
-                    FROM 'file:/mentions.csv' AS row
-                    MATCH (n:Coin {ticker:row.ticker})
-                    MERGE (m:Person {username:row.username})
-                    MERGE (m)-[r:CALLOUT {weight:toInteger(row.weight)}]->(n)
-                    return count(r)
-                         ''')
+            result = self.session.run('''
+                        USING PERIODIC COMMIT 1000 LOAD CSV WITH HEADERS
+                        FROM 'file:/mentions.csv' AS row
+                        MATCH (n:Coin {ticker:row.ticker})
+                        MATCH (m:Person {username:row.username})
+                        MERGE (m)-[r:CALLOUT {weight:toFloat(row.weight)}]->(n)
+                        return count(r)
+                    ''')
+            return [r for r in result]
 
     def create_coinMentions_view(self):
 
@@ -120,7 +130,7 @@ class Neo:
             CALL gds.pageRank.stream('coinMentions', {
             maxIterations: 20,
             dampingFactor: 0.85,
-            relationshipWeightProperty: 'timeWeight'
+            relationshipWeightProperty: 'weight'
             })
             YIELD nodeId, score
             RETURN gds.util.asNode(nodeId).name AS name, score
@@ -131,12 +141,27 @@ class Neo:
 
     def clear_db(self):
         self.session.run("MATCH (n) DETACH DELETE (n)")
-        return "Deleted"
+        print("deleted database")
 
-    def get_nodes(self):
-        nodes = self.session.run("MATCH (n) RETURN (n)")
+    def clear_relations(self, label):
+        if label:
+            self.session.run("MATCH ()-[r:"+label+"]-() DELETE r")
+        else:
+            self.session.run("MATCH ()-[r]-() DELETE r")
+        print("Deleted relations")
+
+    def get_nodes(self, label=None):
+        if label:
+            nodes = self.session.run("MATCH (n:"+label+") RETURN (n)")
+        else:
+            nodes = self.session.run("MATCH (n) RETURN (n)")
+
         return [record["n"] for record in nodes]
 
-    def get_relations(self):
-        relations = self.session.run("MATCH (n)-[r]-> (m) RETURN n, r, m")
+    def get_relations(self, label=None):
+        if label:
+            relations = self.session.run("MATCH (n)-[r:"+label+"]-> (m) RETURN n, r, m")
+        else:
+            relations = self.session.run("MATCH (n)-[r]-> (m) RETURN n, r, m")
+
         return [record["r"] for record in relations]
