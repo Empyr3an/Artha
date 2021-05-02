@@ -9,3 +9,4 @@ notebooks/*.txt
 data/follows/*
 data/tweets/*
 archive/*
+*.pickle

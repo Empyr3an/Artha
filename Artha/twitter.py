@@ -206,7 +206,7 @@ class TwitterAPI:
 
         try:
             req = requests.get(url, headers=self.bearer)
-            return req.json()["data"]
+            data = req.json()["data"]
         except Exception as e:
             raise e
 
@@ -215,9 +215,11 @@ class TwitterAPI:
                 req = requests.get(url + "&next_token=" +
                                    req.json()["meta"]["next_token"],
                                    headers=self.bearer)
-                yield req.json()["data"]
+                data.extend(req.json()["data"])
             except Exception as e:
                 raise e
+
+        return data
 
     # from a user, finds difference in people between each user
     def update_with_new_followers(self, from_user):

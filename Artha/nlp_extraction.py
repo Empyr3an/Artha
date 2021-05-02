@@ -88,7 +88,7 @@ def get_mention_scores(username, docs):
     mentions = np.zeros((len(tick_dict), len(docs)))
 
     # fill in values of dict lists where ticker is mentioned
-    for ind, doc in tqdm(enumerate(docs)):
+    for ind, doc in enumerate(docs):
         for tick in doc._.tickers:
             mentions[tick_dict[tick]][ind] += 1
 
