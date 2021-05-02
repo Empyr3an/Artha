@@ -54,25 +54,31 @@ def _get_crypto_tickers(doc):
 Doc.set_extension("tickers", getter=_get_crypto_tickers)
 Doc.set_extension("tweet_id", default=False)
 Doc.set_extension("tweeted_at", default=False)
+Doc.set_extension("username", default=False)
 
 
-def run_pipeline(username):
-    tweets = dp.load_tweets(username)
-    tweet_text = dp.clean_tweets(tweets)
-
+def run_pipeline(tweet_text):
     docs = []
     with nlp.select_pipes(disable=["tagger", "parser", "lemmatizer"]):
-        for doc, context in nlp.pipe(tweet_text,
-                                     as_tuples=True,
-                                     n_process=-1):
+        for doc, context in tqdm(nlp.pipe(tweet_text,
+                                          as_tuples=True,
+                                          n_process=-1)):
 
             if doc._.tickers:
-                # doc._.tweet_id = context["id"]
-                doc._.tweeted_at = datetime.strftime(
-                    datetime.strptime(context["created_at"],
-                                      '%a %b %d %H:%M:%S +0000 %Y'),
-                    '%m/%d/%Y %H:%M:%S')
-                docs.append(doc)
+                doc._.tweet_id = context["id"]
+                doc._.username = context["username"]
+                try:
+                    doc._.tweeted_at = datetime.strftime(
+                        datetime.strptime(context["created_at"],
+                                        '%a %b %d %H:%M:%S +0000 %Y'),
+                        '%m/%d/%Y %H:%M:%S')
+                    docs.append(doc)
+                except ValueError:
+                    doc._.tweeted_at = datetime.strftime(
+                        datetime.strptime(context["created_at"][:-5],
+                                        "%Y-%m-%dT%H:%M:%S"),
+                        '%m/%d/%Y %H:%M:%S')
+                    docs.append(doc)
 
     return docs
 

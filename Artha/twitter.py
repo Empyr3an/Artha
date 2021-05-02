@@ -195,17 +195,20 @@ class TwitterAPI:
             start_date = user_data["created_at"]
 
         if not tweet_fields:  # my default selected payload parameters
-            tweet_fields = ["created_at", "context_annotations", "entities",
+            tweet_fields = ["created_at", 
                             "in_reply_to_user_id", "referenced_tweets"
                             ]
 
         url = self.endpoint2 + ('/tweets/search/all?max_results=' + str(cnt) +
                                 '&start_time=' + start_date +
                                 '&query=from:' + user_name +
-                                '&tweet.fields=' + ','.join(tweet_fields))
+                                '&expansions=author_id' +
+                                '&tweet.fields=' + ','.join(tweet_fields) +
+                                '&user.fields=username,location')
 
         try:
             req = requests.get(url, headers=self.bearer)
+            # return req
             data = req.json()["data"]
         except Exception as e:
             raise e
