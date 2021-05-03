@@ -31,8 +31,10 @@ def mention_window(docs, win_start_date, win_length):
     return window_start, window_end
 
 
-def get_mention_edges(docs, username, win_start_date=None, win_length=31):
+def get_mention_edges(docs, username, win_start_date=None,
+                      win_length=31, norm=True):
     def expo_func(x): return np.exp(-.07*x)
+    def norm_vec(x): return x/np.linalg.norm(x)
 
     if not win_start_date:
         win_start_date = datetime.strftime(datetime.utcnow(),
@@ -67,8 +69,9 @@ def get_mention_edges(docs, username, win_start_date=None, win_length=31):
     # multiply matrix of mentions by time vector
     tick_weights = np.matmul(mentions, tweet_times)
 
-    # get norm vector of each tick's relavance
-    tick_weights = tick_weights/np.linalg.norm(tick_weights)
+    # get norm vector of each tick's relavance if chosen
+    if norm:
+        tick_weights = tick_weights/np.linalg.norm(tick_weights)
 
     # # list of edges to add
     return list(zip([username] * len(sub_docs),

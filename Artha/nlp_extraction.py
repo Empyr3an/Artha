@@ -6,6 +6,7 @@ from datetime import datetime
 # import numpy as np
 from tqdm import tqdm
 
+from spacy.tokens import DocBin
 # from spacytextblob.spacytextblob import SpacyTextBlob
 # from vaderSentiment.vaderSentiment import SentimentIntensityAnalyzer
 # analyzer = SentimentIntensityAnalyzer()
@@ -80,3 +81,19 @@ def run_pipeline(tweet_text):
                     docs.append(doc)
 
     return docs
+
+
+def save_backup(docs, location="backup.txt"):
+    doc_bin = DocBin(attrs=["ENT_IOB", "ENT_TYPE"], store_user_data=True)
+    for doc in tqdm(docs):
+        doc_bin.add(doc)
+    with open(location, "wb") as f:
+        f.write(doc_bin.to_bytes())
+    print("saved")
+
+
+def load_backup(location="backup.txt"):
+    with open(location, "rb") as f:
+        doc_bin = DocBin().from_bytes(f.read())
+        print("loaded")
+        return list(doc_bin.get_docs(nlp.vocab))
