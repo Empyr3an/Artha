@@ -36,7 +36,7 @@ class Neo:
 
         with open(location, 'w+') as out:
             csv_out = csv.writer(out)
-            csv_out.writerow(["from", "id", "name", "username"])
+            csv_out.writerow(["from", "id", "name", "username", "weight"])
             for row in data:
                 csv_out.writerow(row)
 
@@ -72,7 +72,7 @@ class Neo:
                         FROM 'file:/follows.csv' AS row
                         MATCH (m:Person {username:row.from})
                         MATCH (n:Person {id:row.id})
-                        MERGE (m)-[r:FOLLOWS]->(n)
+                        MERGE (m)-[r:FOLLOWS {weight:row.weight}]->(n)
                         return count(r)
                     ''')
             print("loaded relations")
@@ -100,8 +100,8 @@ class Neo:
             result = self.session.run('''
                         USING PERIODIC COMMIT 1000 LOAD CSV WITH HEADERS
                         FROM 'file:/mentions.csv' AS row
-                        MATCH (n:Coin {ticker:row.ticker})
                         MATCH (m:Person {username:row.username})
+                        MERGE (n:Coin {ticker:row.ticker})
                         MERGE (m)-[r:CALLOUT {weight:toFloat(row.weight)}]->(n)
                         return count(r)
                     ''')

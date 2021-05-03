@@ -75,7 +75,7 @@ def get_mention_edges(docs, username, win_start_date=None,
 
     # get norm vector of each tick's relavance if chosen
     if norm:
-        tick_weights = tick_weights/np.linalg.norm(tick_weights)
+        tick_weights = tick_weights/np.linalg.norm(tick_weights, ord=1)
 
     # # list of edges to add
     return list(zip([username] * len(sub_docs),
