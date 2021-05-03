@@ -28,7 +28,7 @@ class Neo:
         self.session.run('''USING PERIODIC COMMIT 1000 LOAD CSV WITH HEADERS
                             FROM 'file:/coins.csv' AS row
                             MERGE (n:Coin {ticker:row.ticker})''')
-        print("Updated coins")
+        # print("Updated coins")
 
     def update_follows_csv(self, data, location=None):
         if not location:
@@ -55,7 +55,7 @@ class Neo:
                                     n.name = row.name,
                                     n.username = row.username
                         ''')
-            print("loaded People")
+            # print("loaded People")
             # create all edges
 
             return follow_result
@@ -75,7 +75,7 @@ class Neo:
                         MERGE (m)-[r:FOLLOWS {weight:toFloat(row.weight)}]->(n)
                         return count(r)
                     ''')
-            print("loaded relations")
+            # print("loaded relations")
             return node_result
         else:
             return -1
@@ -130,8 +130,11 @@ class Neo:
 # TODO MAKE VARIABLE DAMPENING FACTOR
     def pagerank(self, auto):
 
-        if auto:
-            self.create_coinMentions_view()
+        exists = self.session.run("CALL gds.graph.exists('mentions') YIELD exists")
+        if [r["exists"] for r in exists][0]:
+            self.drop_coinMentions_view()
+
+        self.create_coinMentions_view()
 
         page_rank_result = self.session.run('''
             CALL gds.pageRank.stream('mentions', {
@@ -144,31 +147,27 @@ class Neo:
             ORDER BY score DESC, ticker ASC
                         ''')
 
-        if auto:
-            self.drop_coinMentions_view()
-
         return [r for r in page_rank_result]
 
     def pagerank_scores(self, auto=False):
-        scores = self.pagerank(auto)
+        
+        return [[i["ticker"], i["score"]]
+                for i in self.pagerank(auto)
+                if i["score"] > .1500001 and i["ticker"]]
 
-        final_scores = []
-        for i in scores:
-            if i["score"] > .1500001 and i["ticker"]:
-                final_scores.append((i["ticker"], i["score"]))
-
-        return final_scores
-
-    def clear_db(self):
-        self.session.run("MATCH (n) DETACH DELETE (n)")
-        print("deleted database")
+    def clear_nodes(self, label=None):
+        if label:
+            self.session.run("MATCH (n:"+label+") DETACH DELETE (n)")
+        else:
+            self.session.run("MATCH (n) DETACH DELETE (n)")
+        # print("deleted nodes")
 
     def clear_relations(self, label):
         if label:
             self.session.run("MATCH ()-[r:"+label+"]-() DELETE r")
         else:
             self.session.run("MATCH ()-[r]-() DELETE r")
-        print("Deleted relations")
+        # print("Deleted relations")
 
     def get_nodes(self, label=None):
         if label:
