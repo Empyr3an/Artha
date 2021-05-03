@@ -8,6 +8,10 @@ def to_datetime(date_string):
     return datetime.strptime(date_string, '%m/%d/%Y %H:%M:%S')
 
 
+def from_datetime(date_obj):
+    return datetime.strftime(date_obj, '%m/%d/%Y %H:%M:%S')
+
+
 # takes in date strings
 def time_diff(cur_time, prev_time):
     time = to_datetime(cur_time) - to_datetime(prev_time)
