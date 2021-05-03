@@ -195,7 +195,7 @@ class TwitterAPI:
             start_date = user_data["created_at"]
 
         if not tweet_fields:  # my default selected payload parameters
-            tweet_fields = ["created_at", 
+            tweet_fields = ["created_at",
                             "in_reply_to_user_id", "referenced_tweets"
                             ]
 

@@ -3,7 +3,6 @@
 # import time
 import json
 import contractions
-from datetime import datetime
 import csv
 # from datetime import datetime, timedelta
 
@@ -51,7 +50,6 @@ def clean_tweets(tweets, username):
                         "created_at": tweet["created_at"],
                         "id": tweet["id"],
                         "username": username
-                          # ,
                         # "user_mentions": [user["screen_name"]
                         #                   for user in tweet["user_mentions"]]
                         })
@@ -59,8 +57,3 @@ def clean_tweets(tweets, username):
             # returns tuple of (text, {created date, tweet index})
             # TODO uncomment user mentions here if needed
     return tweet_text
-
-
-def time_diff(date_string):
-    time = datetime.now() - datetime.strptime(date_string, '%m/%d/%Y %H:%M:%S')
-    return time.days + (time.seconds+time.microseconds/(10**6))/86400

@@ -1,10 +1,9 @@
 import spacy
 from spacy.tokens import Doc
 import json
-import Artha.data_process as dp
+# import Artha.data_process as dp
 from datetime import datetime
-import numpy as np
-from collections import Counter
+# import numpy as np
 from tqdm import tqdm
 
 # from spacytextblob.spacytextblob import SpacyTextBlob
@@ -70,41 +69,14 @@ def run_pipeline(tweet_text):
                 try:
                     doc._.tweeted_at = datetime.strftime(
                         datetime.strptime(context["created_at"],
-                                        '%a %b %d %H:%M:%S +0000 %Y'),
+                                          '%a %b %d %H:%M:%S +0000 %Y'),
                         '%m/%d/%Y %H:%M:%S')
                     docs.append(doc)
                 except ValueError:
                     doc._.tweeted_at = datetime.strftime(
                         datetime.strptime(context["created_at"][:-5],
-                                        "%Y-%m-%dT%H:%M:%S"),
+                                          "%Y-%m-%dT%H:%M:%S"),
                         '%m/%d/%Y %H:%M:%S')
                     docs.append(doc)
 
     return docs
-
-
-def get_mention_scores(username, docs):
-    def expo_func(x): return np.exp(-.07*x)
-
-    all_ticks = Counter([tick for doc in docs
-                         for tick in doc._.tickers]).most_common()
-
-    tick_dict = {tick[0]: index for index, tick in enumerate(all_ticks)}
-
-    mentions = np.zeros((len(tick_dict), len(docs)))
-
-    # fill in values of dict lists where ticker is mentioned
-    for ind, doc in enumerate(docs):
-        for tick in doc._.tickers:
-            mentions[tick_dict[tick]][ind] += 1
-
-    # function of array of tweet times
-    tweet_times = np.array([dp.time_diff(doc._.tweeted_at) for doc in docs])
-    tweet_times = expo_func(tweet_times.reshape((len(docs), 1)))
-
-    # multiply matrix of mentions by time vector
-    mul = np.matmul(mentions, tweet_times)\
-            .round(5).reshape(1, len(all_ticks))[0]
-
-    # list of edges to add
-    return list(zip([username] * len(docs), list(tick_dict.keys()), mul))
