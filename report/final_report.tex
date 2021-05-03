@@ -123,9 +123,29 @@ After loading this data, pagerank is conducted on this graph of users, who they 
 
 Thus, to identify assets before they become mentioned more and more, we consider the pagerank scores of the coins over time. Specifically, we will consider tweets in a window of 90 days, calculate 
 
+
+The specific steps of the algorithm are as follows:
+
+\subsection{Data Collection}
+
 \begin{enumerate}
-    \item 
+    \item Collect list of people on Twitter
+
+    \item Download everyone each person follows
+    
+    \item Download all tweets of each person
 \end{enumerate}
+
+\subsection{Data Processing}
+
+\subsection{Graph Database Creation}
+
+\begin{enumerate}
+    \item For each user in the list, gather all the intragroup follows, edge weight is reciprocal of number of people they follow
+    \item For each user's tweet history, select window of 30 days and extract coin mentions as explained. Each coin mention and weight becomes an edge 
+    \item Combine these follow and mention edges, and user and coin nodes into a single graph, and run weighted pagerank. Collect scores of coin nodes
+\end{enumerate}
+
 
 
 \section{Evaluation}

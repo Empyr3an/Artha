@@ -79,9 +79,17 @@ def run_pipeline(tweet_text):
                                           "%Y-%m-%dT%H:%M:%S"),
                         '%m/%d/%Y %H:%M:%S')
                     docs.append(doc)
-
+    save_backup(docs)
     return docs
 
+def to_doc_dict(docs):
+    doc_dict = {}
+    for doc in tqdm(docs):
+        if doc._.username not in doc_dict.keys():
+            doc_dict[doc._.username] = [doc]
+        else:
+            doc_dict[doc._.username].append(doc)
+    return doc_dict
 
 def save_backup(docs, location="backup.txt"):
     doc_bin = DocBin(attrs=["ENT_IOB", "ENT_TYPE"], store_user_data=True)

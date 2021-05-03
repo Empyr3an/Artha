@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.14159265-2.6-1.40.21 (TeX Live 2020) (preloaded format=pdflatex 2020.4.7)  2 MAY 2021 12:43
+This is pdfTeX, Version 3.14159265-2.6-1.40.21 (TeX Live 2020) (preloaded format=pdflatex 2020.4.7)  3 MAY 2021 13:34
 entering extended mode
  restricted \write18 enabled.
  file:line:error style messages enabled.
@@ -519,24 +519,24 @@ File: umsa.fd 2013/01/14 v3.01 AMS symbols A
 LaTeX Font Info:    Trying to load font information for U+msb on input line 102.
  (/usr/local/texlive/2020/texmf-dist/tex/latex/amsfonts/umsb.fd
 File: umsb.fd 2013/01/14 v3.01 AMS symbols B
-) 
-AED: lastpage setting LastPage
-[1
+) [1
 
-{/usr/local/texlive/2020/texmf-var/fonts/map/pdftex/updmap/pdftex.map}] (/Users/harshasomisetty/code/artha/report/aux/final_report.aux) ) 
+{/usr/local/texlive/2020/texmf-var/fonts/map/pdftex/updmap/pdftex.map}] 
+AED: lastpage setting LastPage
+[2] (/Users/harshasomisetty/code/artha/report/aux/final_report.aux) ) 
 Here is how much of TeX's memory you used:
- 25244 strings out of 480608
- 624403 string characters out of 5903631
- 975096 words of memory out of 5000000
- 40735 multiletter control sequences out of 15000+600000
- 539586 words of font info for 53 fonts, out of 8000000 for 9000
+ 25245 strings out of 480608
+ 624418 string characters out of 5903631
+ 976096 words of memory out of 5000000
+ 40736 multiletter control sequences out of 15000+600000
+ 539893 words of font info for 54 fonts, out of 8000000 for 9000
  1141 hyphenation exceptions out of 8191
  68i,6n,98p,1008b,609s stack positions out of 5000i,500n,10000p,200000b,80000s
 </usr/local/texlive/2020/texmf-dist/fonts/type1/public/amsfonts/cm/cmbx12.pfb></usr/local/texlive/2020/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi10.pfb></usr/local/texlive/2020/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi7.pfb></usr/local/texlive/2020/texmf-dist/fonts/type1/public/amsfonts/cm/cmr10.pfb></usr/local/texlive/2020/texmf-dist/fonts/type1/public/amsfonts/cm/cmr12.pfb></usr/local/texlive/2020/texmf-dist/fonts/type1/public/amsfonts/cm/cmr17.pfb></usr/local/texlive/2020/texmf-dist/fonts/type1/public/amsfonts/cm/cmr7.pfb></usr/local/texlive/2020/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy7.pfb>
-Output written on /Users/harshasomisetty/code/artha/report/aux/final_report.pdf (1 page, 84346 bytes).
+Output written on /Users/harshasomisetty/code/artha/report/aux/final_report.pdf (2 pages, 86078 bytes).
 PDF statistics:
- 43 PDF objects out of 1000 (max. 8388607)
- 31 compressed objects within 1 object stream
+ 46 PDF objects out of 1000 (max. 8388607)
+ 33 compressed objects within 1 object stream
  0 named destinations out of 1000 (max. 500000)
  13 words of extra memory for PDF output out of 10000 (max. 10000000)
 

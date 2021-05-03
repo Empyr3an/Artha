@@ -72,7 +72,7 @@ class Neo:
                         FROM 'file:/follows.csv' AS row
                         MATCH (m:Person {username:row.from})
                         MATCH (n:Person {id:row.id})
-                        MERGE (m)-[r:FOLLOWS {weight:row.weight}]->(n)
+                        MERGE (m)-[r:FOLLOWS {weight:toFloat(row.weight)}]->(n)
                         return count(r)
                     ''')
             print("loaded relations")
@@ -107,38 +107,57 @@ class Neo:
                     ''')
             return [r for r in result]
 
-    # def create_coinMentions_view(self):
+    def create_coinMentions_view(self):
 
-    #     self.session.run('''
-    #         CALL gds.graph.create(
-    #             'coinMentions',
-    #             ['Person', 'Coin'],
-    #             "CALLOUT",
-    #             {
-    #                 relationshipProperties: 'weight'
-    #             }
-    #         )
-    #                      ''')
+        result = self.session.run('''
+            CALL gds.graph.create(
+                'mentions',
+                {Person: {label: "Person"},Coin: {label: "Coin"}},
+                {CALLOUT: {type: 'CALLOUT', orientation: 'UNDIRECTED'},
+                FOLLOWS: {type: 'FOLLOWS', orientation: 'NATURAL'}
+                },
+                { relationshipProperties: 'weight'}
+            )
+            YIELD graphName, nodeCount, relationshipCount
+            ''')
+        return [r for r in result]
 
-    # def drop_coinMentions_view(self):
-    #     self.session.run('''
-    #         CALL gds.graph.drop('coinMentions') YIELD graphName;
-    #                     ''')
+    def drop_coinMentions_view(self):
+        self.session.run('''
+            CALL gds.graph.drop('mentions') YIELD graphName;
+                        ''')
 
-    # def page_rank(self):
+# TODO MAKE VARIABLE DAMPENING FACTOR
+    def pagerank(self, auto):
 
-    #     page_rank_result = self.session.run('''
-    #         CALL gds.pageRank.stream('coinMentions', {
-    #         maxIterations: 20,
-    #         dampingFactor: 0.85,
-    #         relationshipWeightProperty: 'weight'
-    #         })
-    #         YIELD nodeId, score
-    #         RETURN gds.util.asNode(nodeId).name AS name, score
-    #         ORDER BY score DESC, name ASC
-    #                     ''')
+        if auto:
+            self.create_coinMentions_view()
 
-    #     return page_rank_result
+        page_rank_result = self.session.run('''
+            CALL gds.pageRank.stream('mentions', {
+            maxIterations: 20,
+            dampingFactor: 0.85,
+            relationshipWeightProperty: 'weight'
+            })
+            YIELD nodeId, score
+            RETURN gds.util.asNode(nodeId).ticker AS ticker, score
+            ORDER BY score DESC, ticker ASC
+                        ''')
+
+        if auto:
+            self.drop_coinMentions_view()
+
+        return [r for r in page_rank_result]
+
+    def pagerank_scores(self, auto=False):
+        scores = self.pagerank(auto)
+
+        final_scores = []
+        for i in scores:
+            if i["score"] > .1500001 and i["ticker"]:
+                final_scores.append((i["ticker"], i["score"]))
+
+        return final_scores
 
     def clear_db(self):
         self.session.run("MATCH (n) DETACH DELETE (n)")

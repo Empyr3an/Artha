@@ -1,7 +1,7 @@
 # Fdb version 3
-["pdflatex"] 1619973837 "/Users/harshasomisetty/code/artha/report/final_report.tex" "/Users/harshasomisetty/code/artha/report/aux/final_report.pdf" "final_report" 1619973838
-  "/Users/harshasomisetty/code/artha/report/aux/final_report.aux" 1619973838 469 007f6a140221e986702524ea4a153b7b ""
-  "/Users/harshasomisetty/code/artha/report/final_report.tex" 1619973835 5637 6603baf982031608b98a406d5931567c ""
+["pdflatex"] 1620063274 "/Users/harshasomisetty/code/artha/report/final_report.tex" "/Users/harshasomisetty/code/artha/report/aux/final_report.pdf" "final_report" 1620063275
+  "/Users/harshasomisetty/code/artha/report/aux/final_report.aux" 1620063275 744 453122099de73ce997cf91dc26e9b0db ""
+  "/Users/harshasomisetty/code/artha/report/final_report.tex" 1620063272 6390 02befb2d43688c5feed4ad2e58a21b75 ""
   "/usr/local/texlive/2020/texmf-dist/fonts/map/fontname/texfonts.map" 1577235249 3524 cb3e574dea2d1052e39280babc910dc8 ""
   "/usr/local/texlive/2020/texmf-dist/fonts/tfm/public/amsfonts/cmextra/cmex7.tfm" 1246382020 1004 54797486969f23fa377b128694d548df ""
   "/usr/local/texlive/2020/texmf-dist/fonts/tfm/public/amsfonts/cmextra/cmex8.tfm" 1246382020 988 bdf658c3bfc2d96d3c8b02cfc1c94c20 ""
@@ -177,11 +177,11 @@
   "/usr/local/texlive/2020/texmf-var/fonts/map/pdftex/updmap/pdftex.map" 1586288239 4811913 0be9a7e86c70a26e5e3042966bcd7097 ""
   "/usr/local/texlive/2020/texmf-var/web2c/pdftex/pdflatex.fmt" 1586288259 2432462 fd0fa20e9a3cb5f8169fd0ba1c955158 ""
   "/usr/local/texlive/2020/texmf.cnf" 1586288231 577 d60164b4589a341208aff7a667fbbdcb ""
-  "aux/final_report.aux" 1619973838 469 007f6a140221e986702524ea4a153b7b "pdflatex"
-  "final_report.tex" 1619973835 5637 6603baf982031608b98a406d5931567c ""
+  "aux/final_report.aux" 1620063275 744 453122099de73ce997cf91dc26e9b0db "pdflatex"
+  "final_report.tex" 1620063272 6390 02befb2d43688c5feed4ad2e58a21b75 ""
   (generated)
-  "/Users/harshasomisetty/code/artha/report/aux/final_report.pdf"
-  "aux/final_report.aux"
-  "/Users/harshasomisetty/code/artha/report/aux/final_report.log"
-  "aux/final_report.pdf"
   "aux/final_report.log"
+  "aux/final_report.pdf"
+  "/Users/harshasomisetty/code/artha/report/aux/final_report.pdf"
+  "/Users/harshasomisetty/code/artha/report/aux/final_report.log"
+  "aux/final_report.aux"

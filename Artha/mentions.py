@@ -35,7 +35,7 @@ def mention_window(docs, win_start_date, win_length):
     return window_start, window_end
 
 
-def get_mention_edges(docs, username, win_start_date=None,
+def get_mention_edges(docs, username, follow_weight, win_start_date=None,
                       win_length=31, norm=True):
     def expo_func(x): return np.exp(-.07*x)
     def norm_vec(x): return x/np.linalg.norm(x)
@@ -80,4 +80,4 @@ def get_mention_edges(docs, username, win_start_date=None,
     # # list of edges to add
     return list(zip([username] * len(sub_docs),
                 list(tick_lookup.keys()),
-                tick_weights))
+                (1-follow_weight) * tick_weights))

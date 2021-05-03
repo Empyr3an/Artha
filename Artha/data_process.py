@@ -57,3 +57,13 @@ def clean_tweets(tweets, username):
             # returns tuple of (text, {created date, tweet index})
             # TODO uncomment user mentions here if needed
     return tweet_text
+
+
+def follow_edges(users, follow_weight):
+    all_follows = []
+    for user in users:
+        follows = [i for i in load_following(user) if i[3] in users]
+        follows = [i + [follow_weight * (1/len(follows))] for i in follows]
+        all_follows.extend(follows)
+
+    return all_follows

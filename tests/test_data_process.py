@@ -1,5 +1,4 @@
 from Artha.data_process import *
-# import Artha
 import pytest
 
 
@@ -12,3 +11,13 @@ import pytest
 ])
 def test_remove_tags(initial_text, trimmed_text):
     assert remove_tags(initial_text) == trimmed_text
+
+
+def test_follow_edges():
+    selected_people = ["BTC_JackSparrow", "razoreth", "Nostranomist", "CryptoKaleo", "nebraskangooner", "Rager", "SavageBTC"]
+    selected_follows = follow_edges(selected_people, .5)
+    s = 0
+    for i in selected_follows:
+        if i[0] == "BTC_JackSparrow":
+            s += i[4]
+    assert round(s, 1) == .5
