@@ -18,14 +18,16 @@ def time_diff(cur_time, prev_time):
     return time.days + (time.seconds+time.microseconds/(10**6))/86400
 
 
-# now in format of "04/03/2021 00:00:00"
+# win_start_date in format of "04/03/2021 00:00:00"
 def mention_window(docs, win_start_date, win_length):
 
     for ind, doc in enumerate(docs):
         diff = time_diff(win_start_date, doc._.tweeted_at)
+        # print(diff)
         if diff > 0:
             window_start = ind
             break
+    
     for ind, doc in enumerate(docs):
         diff = time_diff(win_start_date, doc._.tweeted_at)
         window_end = ind
