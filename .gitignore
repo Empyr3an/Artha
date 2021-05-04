@@ -10,3 +10,6 @@ data/follows/*
 data/tweets/*
 archive/*
 *.pickle
+*.mov
+*.pdf
+*report*
