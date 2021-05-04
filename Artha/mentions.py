@@ -27,7 +27,7 @@ def mention_window(docs, win_start_date, win_length):
         if diff > 0:
             window_start = ind
             break
-    
+
     for ind, doc in enumerate(docs):
         diff = time_diff(win_start_date, doc._.tweeted_at)
         window_end = ind
