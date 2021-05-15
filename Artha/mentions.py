@@ -2,6 +2,8 @@
 import numpy as np
 from datetime import datetime
 # import math
+# this file is for methods related to tweet data extraction
+
 
 
 def to_datetime(date_string):

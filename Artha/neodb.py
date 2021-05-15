@@ -1,6 +1,6 @@
 from neo4j import GraphDatabase
 import csv
-import Artha.crypto_data as crypto
+# import Artha.crypto_data as crypto
 
 
 class Neo:
@@ -11,10 +11,14 @@ class Neo:
         self.path = "/Users/harshasomisetty/Library/Application Support/"\
                     "com.Neo4j.Relate/Data/dbmss/"\
                     "dbms-0dd5b437-acbf-4425-b485-3d197ae3db89/import/"
+        self.session.run('''CREATE CONSTRAINT twitter_username IF NOT EXISTS ON (n:Person)
+                ASSERT n.username IS UNIQUE''')
+        self.session.run('''CREATE CONSTRAINT coin_name IF NOT EXISTS ON (n:Coin)
+                ASSERT n.ticker IS UNIQUE''')
 
-    def update_coins_data(self):
-        markets = crypto.get_market_dict()
-        inv_markets = crypto.get_invert_dict(markets)
+    def update_coins_data(self, inv_markets):
+        # markets = crypto.get_market_dict()
+        # inv_markets = crypto.get_invert_dict(markets)
         with open(self.path+"coins.csv", "w+") as w:
             cw = csv.writer(w)
             cw.writerow(["ticker"])
@@ -150,7 +154,7 @@ class Neo:
         return [r for r in page_rank_result]
 
     def pagerank_scores(self, auto=False):
-        
+
         return [[i["ticker"], i["score"]]
                 for i in self.pagerank(auto)
                 if i["score"] > .1500001 and i["ticker"]]
