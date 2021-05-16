@@ -74,7 +74,7 @@ def get_klines(asset, interval, oldest, newest=None):
     return [np.array([float(num) for num in kline]) for kline in klines]
 
 
-def get_klines_df(klines, window4=30, set_indic=lambda x:x):
+def get_klines_df(klines, window4=30):
     # def to_float(line): 
     def extra_time(klines): return window4*(klines[-1][0] - klines[-2][0])
 
@@ -83,22 +83,19 @@ def get_klines_df(klines, window4=30, set_indic=lambda x:x):
                "Taker Buy Base Volume", "Taker Buy Quote Asset Volume",
                "Ignore"]
 
-    return set_indic(pd.DataFrame.from_records(
+    return pd.DataFrame.from_records(
                 klines + [np.full(len(columns), np.nan)]*window4,
                 index=pd.date_range(start=date_to_twitter(klines[0][0]),
                                     end=date_to_twitter(klines[-1][0]+extra_time(klines)),
                                     periods=len(klines)+window4),
-                columns=columns))
+                columns=columns)
 
 
-def ichimoku(df):
-    ind_ichi = ta.trend.IchimokuIndicator(df["High"],
-                                          df["Low"],
-                                          df["Close"],
-                                          fillna=True)
-    df["tenkan_sen"] = ind_ichi.ichimoku_conversion_line()
-    df["kijun_sen"] = ind_ichi.ichimoku_base_line()
-    df["senkou_span_a"] = ind_ichi.ichimoku_a()
-    df["senkou_span_b"] = ind_ichi.ichimoku_b()
-    df["chikou_span"] = ind_ichi.ichimoku_chikou()
+def ichimoku(df, ichi):
+    
+    df["tenkan_sen"] = ichi.ichimoku_conversion_line()
+    df["kijun_sen"] = ichi.ichimoku_base_line()
+    df["senkou_span_a"] = ichi.ichimoku_a()
+    df["senkou_span_b"] = ichi.ichimoku_b()
+    df["chikou_span"] = ichi.ichimoku_chikou()
     return df
