@@ -2,6 +2,7 @@ from binance import AsyncClient, BinanceSocketManager, Client
 import Artha.configs.binance_config as c
 from datetime import datetime
 import pandas as pd
+import numpy as np
 
 key = c.apis[0][0]
 secret = c.apis[0][1]
@@ -73,3 +74,13 @@ def get_base_dict():
             else:
                 inverse[item]["markets"].append(key)
     return inverse
+
+
+def vol_spikes(arr, window=2):
+    arr = np.array(arr)
+    spikes = []
+    for i in range(len(arr)-window-1):
+        if np.mean(arr[i:i+window])*5 < arr[i+window+1]:
+            spikes.append(i+window+1)
+    # print(spikes)
+    return spikes

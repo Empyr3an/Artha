@@ -5,7 +5,12 @@ from Artha.nlp_extraction import *
 
 def test_get_mention_edges():
     docs = load_backup()
-    doc_dict = to_doc_dict(docs)
+    doc_dict = {}
+    for doc in docs:
+        if doc._.username not in doc_dict.keys():
+            doc_dict[doc._.username] = [doc]
+        else:
+            doc_dict[doc._.username].append(doc)
 
     date = "04/03/2021 00:00:00"
     all_mentions = []
