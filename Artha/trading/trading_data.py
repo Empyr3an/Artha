@@ -1,9 +1,6 @@
 from binance import AsyncClient, BinanceSocketManager, Client
 import Artha.configs.binance_config as c
 from datetime import datetime
-import pandas as pd
-import numpy as np
-import ta
 
 
 key = c.apis[0][0]
@@ -91,11 +88,4 @@ def get_klines_df(klines, window4=30):
                 columns=columns)
 
 
-def ichimoku(df, ichi):
-    
-    df["tenkan_sen"] = ichi.ichimoku_conversion_line()
-    df["kijun_sen"] = ichi.ichimoku_base_line()
-    df["senkou_span_a"] = ichi.ichimoku_a()
-    df["senkou_span_b"] = ichi.ichimoku_b()
-    df["chikou_span"] = ichi.ichimoku_chikou()
-    return df
+
