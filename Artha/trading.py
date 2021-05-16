@@ -3,6 +3,8 @@ import Artha.configs.binance_config as c
 from datetime import datetime
 import pandas as pd
 import numpy as np
+import ta
+
 
 key = c.apis[0][0]
 secret = c.apis[0][1]
@@ -14,33 +16,10 @@ base3_markets = ["BTC", "BNB", 'ETH', 'TRX', 'XRP'] + \
 base4_markets = ['USDT', 'USDC', 'BUSD', 'IDRT', 'BIDR', 'BVND', 'TUSD']
 
 
-def _date_to_twitter(date):
+def date_to_twitter(date):
     obj = datetime.fromtimestamp(date/1000.0)
     return "%s/%s/%s %s:%s:%s" % (obj.month, obj.day, obj.year,
                                   obj.hour, obj.minute, obj.second)
-
-
-def get_klines(asset, interval, oldest, newest=None):
-    if newest:
-        return client.get_historical_klines(asset, interval, oldest, newest)
-    else:
-        return client.get_historical_klines(asset, interval, oldest)
-
-
-# def get_klines_df(asset, interval, oldest, newest=None):
-    # klines = get_klines(asset, interval, oldest, newest)
-def get_klines_df(klines):
-    columns = ["Open Time", "Open", "High", "Low", "Close", "Volume",
-               "Close Time", "Quote Asset Volume", "Number of Trades",
-               "Taker Buy Base Volume", "Taker Buy Quote Asset Volume",
-               "Ignore"]
-
-    return pd.DataFrame.from_records(
-                klines,
-                index=pd.date_range(start=_date_to_twitter(klines[0][0]),
-                                    end=_date_to_twitter(klines[-1][0]),
-                                    periods=len(klines)),
-                columns=columns)
 
 
 # get dict of quote asset and all base pairs
@@ -84,3 +63,42 @@ def vol_spikes(arr, window=2):
             spikes.append(i+window+1)
     # print(spikes)
     return spikes
+
+
+def get_klines(asset, interval, oldest, newest=None):
+    if newest:
+        klines = client.get_historical_klines(asset, interval, oldest, newest)
+    else:
+        klines = client.get_historical_klines(asset, interval, oldest)
+
+    return [np.array([float(num) for num in kline]) for kline in klines]
+
+
+def get_klines_df(klines, window4=30, set_indic=lambda x:x):
+    # def to_float(line): 
+    def extra_time(klines): return window4*(klines[-1][0] - klines[-2][0])
+
+    columns = ["Open Time", "Open", "High", "Low", "Close", "Volume",
+               "Close Time", "Quote Asset Volume", "Number of Trades",
+               "Taker Buy Base Volume", "Taker Buy Quote Asset Volume",
+               "Ignore"]
+
+    return set_indic(pd.DataFrame.from_records(
+                klines + [np.full(len(columns), np.nan)]*window4,
+                index=pd.date_range(start=date_to_twitter(klines[0][0]),
+                                    end=date_to_twitter(klines[-1][0]+extra_time(klines)),
+                                    periods=len(klines)+window4),
+                columns=columns))
+
+
+def ichimoku(df):
+    ind_ichi = ta.trend.IchimokuIndicator(df["High"],
+                                          df["Low"],
+                                          df["Close"],
+                                          fillna=True)
+    df["tenkan_sen"] = ind_ichi.ichimoku_conversion_line()
+    df["kijun_sen"] = ind_ichi.ichimoku_base_line()
+    df["senkou_span_a"] = ind_ichi.ichimoku_a()
+    df["senkou_span_b"] = ind_ichi.ichimoku_b()
+    df["chikou_span"] = ind_ichi.ichimoku_chikou()
+    return df
