@@ -3,6 +3,9 @@ import Artha.configs.binance_config as c
 from datetime import datetime
 import pandas as pd
 import numpy as np
+import concurrent.futures
+import os
+
 
 key = c.apis[0][0]
 secret = c.apis[0][1]
@@ -73,7 +76,6 @@ def get_klines(asset, interval, oldest, newest=None):
 
 
 def get_klines_df(klines, window4=30):
-    # def to_float(line): 
     def extra_time(klines): return window4*(klines[-1][0] - klines[-2][0])
 
     columns = ["Open Time", "Open", "High", "Low", "Close", "Volume",
@@ -91,3 +93,32 @@ def get_klines_df(klines, window4=30):
     df["Ind"] = list(range(len(df.index)))
 
     return df[["Ind"]+columns]
+
+
+def save_klines(df, ticker):
+    df.to_csv("../data/crypto_price_data/"+ticker+".csv", index=True)
+
+
+def klines_worker(ticker, start_date):
+    klines = get_klines(ticker, "1h", start_date)
+    df = get_klines_df(klines)
+    save_klines(df, ticker)
+    df.to_csv("../data/crypto_price_data/"+ticker+".csv", index=True)
+    return "done "+ticker
+
+
+def concurrent_download_klines(all_ticks, start_date):
+    with concurrent.futures.ThreadPoolExecutor(max_workers=60) as executor:
+        result = [executor.submit(klines_worker, ticker, start_date) for ticker in all_ticks]
+    for future in concurrent.futures.as_completed(result):
+        print(future.result())
+
+
+def load_klines(ticker):
+    if ticker+".csv" in os.listdir("../data/crypto_price_data"):
+        df = pd.read_csv("../data/crypto_price_data/"+ticker+".csv")
+        df['Date'] = pd.to_datetime(df['Unnamed: 0'])
+        df = df.set_index("Date").drop(['Unnamed: 0'], axis=1)
+        return df
+    else:
+        print("not a valid ticker")

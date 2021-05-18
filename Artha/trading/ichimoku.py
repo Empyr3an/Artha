@@ -37,11 +37,11 @@ def ichimoku(df):
     df["kumo_twist"] = kumo_twist
 
     # kumo_diff=df["cloud_width"].shift(1) * df["cloud_width"]
-    
-    # axs[0].plot(data.index, data.kumo_twist*max(data.Close), label='kumo_twist', color ="blueviolet") 
+
+    # axs[0].plot(data.index, data.kumo_twist*max(data.Close), label='kumo_twist', color ="blueviolet")
 
 
-def setup_ichi_graph(d, ticker, time_frame):
+def setup_ichi_graph(d, ticker, time_frame, cloud=True, tkc=True):
     fig = ms.make_subplots(rows=2,
                            cols=1,
                            shared_xaxes=True,
@@ -64,11 +64,30 @@ def setup_ichi_graph(d, ticker, time_frame):
         xaxis_rangeslider_visible=False
     )
 
+    # add basic candlesticks
     fig.add_trace(go.Candlestick(
         x=d.index, low=d.Low, high=d.High, close=d.Close, open=d.Open,
         increasing_line_color="green", hovertext=d["Ind"], showlegend=False,
         decreasing_line_color="red"),
         row=1, col=1)
+
+    # add volume
+    fig.add_trace(go.Bar(x=d.index,
+                         y=d.Volume,
+                         marker_color="royalblue",
+                         showlegend=False),
+                  row=2,
+                  col=1)
+
+    # adding cloud and other features
+
+    fig = add_cloud(d, fig) if cloud else fig
+    fig = add_tkc(d, fig) if tkc else fig
+
+    return fig
+
+
+def add_cloud(d, fig):
 
     fig.add_trace(go.Scatter(x=d['senkou_a'].index,
                              y=d['senkou_a'],
@@ -88,7 +107,6 @@ def setup_ichi_graph(d, ticker, time_frame):
                              name='senkou_a_trim',
                              opacity=0,
                              showlegend=False,
-
                              hoverinfo='skip'))
 
     fig.add_trace(go.Scatter(x=d['cloud_bottom'].index,
@@ -122,8 +140,12 @@ def setup_ichi_graph(d, ticker, time_frame):
                              opacity=0,
                              showlegend=False,
                              fill="tonexty",
-                             hoverinfo='skip'))  
+                             hoverinfo='skip'))
 
+    return fig
+
+
+def add_tkc(d, fig):
     fig.add_trace(go.Scatter(x=d['tenkan_sen'].index,
                              y=d['tenkan_sen'],
                              type='scatter',
@@ -150,80 +172,12 @@ def setup_ichi_graph(d, ticker, time_frame):
                              marker_color='lightblue',
                              name='chikou_span',
                              hoverinfo='skip'))
-
-    fig.add_trace(go.Bar(x=d.index,
-                         y=d.Volume,
-                         marker_color="royalblue",
-                         showlegend=False),
-                  row=2,
-                  col=1)
-
+    
     return fig
 
 
 
 
-
-# if .__contains__('senkou_c'):
-#             trace=go.Scatter(
-#                 x=['date'],
-#                 y=['senkou_c'],
-#                 name="------",
-#                 line=dict(color=('rgba(255, 255, 255, 0)')))
-#             self.data.append(trace)
-
-#         if .__contains__('senkou_b'):
-#             trace=go.Scatter(
-#                 x=['date'],
-#                 y=['senkou_b'],
-#                 fill='tonexty',
-#                 name="Senkou B",
-#                 fillcolor='rgba(255, 0, 0, 0.3)',
-#                 line=dict(color=('rgba(255, 0, 0, 0.3)')))
-#             self.data.append(trace)
-
-#         if .__contains__('senkou_c'):
-#             trace=go.Scatter(
-#                 x=['date'],
-#                 y=['senkou_c'],
-#                 name="------",
-#                 line=dict(color=('rgba(255, 255, 255, 0)')))
-#             self.data.append(trace)
-
-#         if .__contains__('senkou_a'):
-#             trace=go.Scatter(
-#                 x=['date'],
-#                 y=['senkou_a'],
-#                 fill='tonexty',
-#                 name="Senkou A",
-#                 fillcolor='rgba(0, 255, 0, 0.3)',
-#                 line=dict(color=('rgba(0, 255, 0, 0.3)')))
-#             self.data.append(trace)
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-# def get_buy_signals(df, list_of_dates):
-#     buy=np.zeros(len(df.index))
-    
-#     for date_str in list_of_dates:
-#         buy[int(df.loc[date_str].A)]=1
-#     return buy
-# get_buy_signals(df, ["2021-03-29 03:20:46.435845214"])
-# k
-# df["bull_cloud_width"]=df["senkou_a"] - df["senkou_b"]
 
 # df['above_cloud']=0
 # df['above_cloud']=np.where((df['Low'] > df['senkou_a'])  & (df['Low'] > df['senkou_b'] ), 1, df['above_cloud'])
@@ -235,11 +189,6 @@ def setup_ichi_graph(d, ticker, time_frame):
 # df['price_tenkan_cross']=np.NaN
 # df['price_tenkan_cross']=np.where((df['Open'].shift(1) <= df['tenkan_sen'].shift(1)) & (df['Open'] > df['tenkan_sen']), 1, df['price_tenkan_cross'])
 # df['price_tenkan_cross']=np.where((df['Open'].shift(1) >= df['tenkan_sen'].shift(1)) & (df['Open'] < df['tenkan_sen']), -1, df['price_tenkan_cross'])
-
-
-
-
-
 
 
 
@@ -262,5 +211,3 @@ def setup_ichi_graph(d, ticker, time_frame):
 # df['strategy_returns']=df['stock_returns'] * df['position']
 
 # df[['stock_returns','strategy_returns']].cumsum().plot(figsize=(15,8))
-
-
