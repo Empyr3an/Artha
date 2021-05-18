@@ -58,8 +58,6 @@ def setup_ichi_graph(d, ticker, time_frame, cloud=True, tkc=True):
         yaxis1_title="Price",
         yaxis2_title="Volume",
         xaxis2_title="Time",
-        width=1300,
-        height=900,
         hovermode="x",
         xaxis_rangeslider_visible=False
     )
@@ -74,7 +72,7 @@ def setup_ichi_graph(d, ticker, time_frame, cloud=True, tkc=True):
     # add volume
     fig.add_trace(go.Bar(x=d.index,
                          y=d.Volume,
-                         marker_color="royalblue",
+                         marker_color=['royalblue']*len(d),
                          showlegend=False),
                   row=2,
                   col=1)

@@ -114,9 +114,9 @@ def concurrent_download_klines(all_ticks, start_date):
         print(future.result())
 
 
-def load_klines(ticker):
-    if ticker+".csv" in os.listdir("../data/crypto_price_data"):
-        df = pd.read_csv("../data/crypto_price_data/"+ticker+".csv")
+def load_klines(ticker, location="data/crypto_price_data/"):
+    if ticker+".csv" in os.listdir(location):
+        df = pd.read_csv(location+ticker+".csv")
         df['Date'] = pd.to_datetime(df['Unnamed: 0'])
         df = df.set_index("Date").drop(['Unnamed: 0'], axis=1)
         return df
