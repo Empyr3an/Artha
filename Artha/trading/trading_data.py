@@ -1,7 +1,8 @@
 from binance import AsyncClient, BinanceSocketManager, Client
 import Artha.configs.binance_config as c
 from datetime import datetime
-
+import pandas as pd
+import numpy as np
 
 key = c.apis[0][0]
 secret = c.apis[0][1]
@@ -80,12 +81,13 @@ def get_klines_df(klines, window4=30):
                "Taker Buy Base Volume", "Taker Buy Quote Asset Volume",
                "Ignore"]
 
-    return pd.DataFrame.from_records(
+    df = pd.DataFrame.from_records(
                 klines + [np.full(len(columns), np.nan)]*window4,
                 index=pd.date_range(start=date_to_twitter(klines[0][0]),
                                     end=date_to_twitter(klines[-1][0]+extra_time(klines)),
                                     periods=len(klines)+window4),
                 columns=columns)
 
+    df["Ind"] = list(range(len(df.index)))
 
-
+    return df[["Ind"]+columns]
