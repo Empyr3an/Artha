@@ -6,8 +6,7 @@
 !README.txt
 Artha/configs
 notebooks/*.txt
-data/follows/*
-data/tweets/*
+data/*
 archive/*
 *.pickle
 *.mov
