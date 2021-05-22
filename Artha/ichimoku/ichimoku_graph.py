@@ -1,4 +1,3 @@
-
 import chart_studio.plotly as py
 import plotly.graph_objs as go
 import plotly.subplots as ms
@@ -147,24 +146,14 @@ def add_tenkan_kijun(d, fig):
 
 def tenkan_kijun_cross(d, fig):
     bull_tks = [d.bull_tk_cross.index[i] for i in range(len(d)) if d.bull_tk_cross.values[i] == 1]
-    for date_str in bull_tks:
-        fig.update_layout(
-            shapes=[dict(x0=date_str, x1=date_str, y0=0, y1=1, xref='x', yref='paper',
-                    line_width=1)],
-            annotations=[dict(
-                x=date_str, y=0.05, xref='x', yref='paper',
-                showarrow=False, xanchor='left', text='Bull TK cross')]
-    )
-
-# fig.update_layout(
-#     shapes = [dict(
-#         x0='2021-04-25', x1='2021-04-25', y0=0, y1=1, xref='x', yref='paper',
-#         line_width=2)],
-#     annotations=[dict(
-#         x='2021-04-25', y=0.05, xref='x', yref='paper',
-#         showarrow=False, xanchor='left', text='Increase Period Begins')]
-# )
-
+    # for date_str in bull_tks[:1]:
+    fig.update_layout(
+        shapes=[dict(x0=str(date_str), x1=str(date_str), y0=0, y1=1, xref='x', yref='paper', line_width=1) for date_str in bull_tks],
+        annotations=[dict(
+            x=str(date_str), y=0.05, xref='x', yref='paper',
+            showarrow=False, xanchor='left', text='Bull TK cross') for date_str in bull_tks]
+)
+    #bear tk cross
     return fig
 
 def price_kijun_cross(d, fig):
