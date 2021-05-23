@@ -25,9 +25,9 @@ def ichimoku_setup(df):
                                    (df['tenkan_sen'] < df['kijun_sen']), 1, 0)
 
     # edit so that only significant breakouts are found
-    df['bull_kumo_pricecross'] = np.where((df["Open"] < df['cloud_top']) &
+    df['bull_kumo_breakout'] = np.where((df["Open"] < df['cloud_top']) &
                                           (df["Close"] > df['cloud_top']), 1, 0)
-    df['bear_kumo_pricecross'] = np.where((df["Open"] > df['cloud_bottom']) &
+    df['bear_kumo_breakout'] = np.where((df["Open"] > df['cloud_bottom']) &
                                           (df["Close"] < df['cloud_bottom']), 1, 0)
 
     kumo_twist = np.zeros(len(df.values))
@@ -38,8 +38,9 @@ def ichimoku_setup(df):
 
     # kumo_diff=df["cloud_width"].shift(1) * df["cloud_width"]
 
-    # axs[0].plot(data.index, data.kumo_twist*max(data.Close), label='kumo_twist', color ="blueviolet")
     return df
+
+# def basic_entry(df):
 
 # df['above_cloud']=0
 # df['above_cloud']=np.where((df['Low'] > df['senkou_a'])   &

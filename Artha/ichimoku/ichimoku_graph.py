@@ -2,7 +2,7 @@ import chart_studio.plotly as py
 import plotly.graph_objs as go
 import plotly.subplots as ms
 
-def setup_ichi_graph(d, ticker, time_frame, cloud=True, lines=True, tkc=True, pkc=True, kb=True, sc=True, cc=True):
+def setup_ichi_graph(d, ticker, time_frame, cloud=True, lines=True, features=None):
     fig = ms.make_subplots(rows=2,
                            cols=1,
                            shared_xaxes=True,
@@ -19,7 +19,7 @@ def setup_ichi_graph(d, ticker, time_frame, cloud=True, lines=True, tkc=True, pk
         yaxis1_title="Price",
         yaxis2_title="Volume",
         xaxis2_title="Time",
-        hovermode="x",
+        hovermode="x unified",
         xaxis_rangeslider_visible=False,
         height=950
     )
@@ -44,16 +44,9 @@ def setup_ichi_graph(d, ticker, time_frame, cloud=True, lines=True, tkc=True, pk
         fig = add_ichimoku_cloud(d, fig)
     if lines:
         fig = add_tenkan_kijun(d, fig)
-    if tkc:
-        fig = tenkan_kijun_cross(d, fig)
-    if pkc:
-        fig = price_kijun_cross(d, fig)
-    if kb:
-        fig = kumo_breakout(d, fig)
-    if sc:
-        fig = senkou_cross(d, fig)
-    if cc:
-        fig = chikou_cross(d, fig)
+
+    fig = add_feature(d, fig, features)
+
     return fig
 
 def add_ichimoku_cloud(d, fig):
@@ -144,34 +137,20 @@ def add_tenkan_kijun(d, fig):
     return fig
 
 
-def tenkan_kijun_cross(d, fig):
-    bull_tks = [d.bull_tk_cross.index[i] for i in range(len(d)) if d.bull_tk_cross.values[i] == 1]
-    # for date_str in bull_tks[:1]:
-    fig.update_layout(
-        shapes=[dict(x0=str(date_str), x1=str(date_str), y0=0, y1=1, xref='x', yref='paper', line_width=1) for date_str in bull_tks],
-        annotations=[dict(
+def add_feature(d, fig, features):
+    shapes, annotations = [], []
+    for feature in features:
+
+        events = [d[feature].index[i] for i in range(len(d)) if d[feature].values[i] == 1]
+
+        shapes.extend([dict(x0=str(date_str), x1=str(date_str), y0=0, y1=1, xref='x', yref='paper', line_width=1) for date_str in events])
+        annotations.extend([dict(
             x=str(date_str), y=0.05, xref='x', yref='paper',
-            showarrow=False, xanchor='left', text='Bull TK cross') for date_str in bull_tks]
-)
-    #bear tk cross
+            showarrow=False, xanchor='left', text=feature.replace("_", " ").capitalize()) for date_str in events])
+
+        #bear tk cross
+    fig.update_layout(
+        shapes = shapes,
+        annotations = annotations
+    )
     return fig
-
-def price_kijun_cross(d, fig):
-
-    return fig
-
-def kumo_breakout(d, fig):
-
-    return fig
-
-def senkou_cross(d, fig):
-
-    return fig
-
-def chikou_cross(d, fig):
-
-    return fig
-
-
-
-# axs[0].plot(data.index, data.kumo_twist*max(data.Close), label='kumo_twist', color ="blueviolet")

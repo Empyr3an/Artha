@@ -1,4 +1,4 @@
-from Artha.trading import *
+from Artha.binance_data import *
 from .test_data.trading_data import *
 import pytest
 import numpy as np
