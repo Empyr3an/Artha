@@ -22,28 +22,6 @@ def ichimoku_setup(df, window=30):
     df["strong_chikou"] = find_strong_chikous(df)
     # df["strong_tk"] = get
 
-    df['bull_tk_cross'] = np.where((df['tenkan_sen'].shift(1) <= df['kijun_sen'].shift(1)) &
-                                   (df['tenkan_sen'] > df['kijun_sen']), 1, 0)
-    df['bear_tk_cross'] = np.where((df['tenkan_sen'].shift(1) >= df['kijun_sen'].shift(1)) &
-                                   (df['tenkan_sen'] < df['kijun_sen']), 1, 0)
-
-    # edit so that only significant breakouts are found
-    df['bull_kumo_breakout'] = np.where((df["Open"] < df['kumo_top']) &
-                                          (df["Close"] > df['kumo_top']), 1, 0)
-    df['bear_kumo_breakout'] = np.where((df["Open"] > df['kumo_bottom']) &
-                                          (df["Close"] < df['kumo_bottom']), 1, 0)
-
-
-    df["kumo_width"] = df["senkou_a_trim"] - df["senkou_b"]
-    kumo_twist = np.zeros(len(df.values))
-    for i in range(len(df.values)):
-        if df["kumo_width"][i]*df["kumo_width"][i-1] < 0:
-            kumo_twist[i] = 1
-    # df["kumo_future"] = np.roll(
-    df["kumo_twist"] = kumo_twist
-
-    # kumo_diff=df["kumo_width"].shift(1) * df["kumo_width"]
-
     return df
 
 def find_strong_chikous(df, window=30, pct=5, days=10):
@@ -76,6 +54,8 @@ def is_strong_chikou(df, index, window=30, pct=5, days=10):
 def percent_diff(current, prev):
     return abs((current-prev)/prev)
 
+
+
 # def basic_bull_entry(df):
     # price above kumo
     # tenkan greater than kijun
@@ -93,45 +73,75 @@ def percent_diff(current, prev):
     # exit buffer is .4%
     # or just use trailing stop
 
-#     price_above_kumo = np.where(df["Close"] > df["kumo_top"])
-# tenkan_above_kijun = np.where(df["tenkan_sen"] > df["kijun_sen"])
-# p>
-
-# df['above_kumo']=0
-# df['above_kumo']=np.where((df['Low'] > df['senkou_a'])   &
-								# (df['Low'] > df['senkou_b'] ), 1, df['above_kumo'])
-# df['above_kumo']=np.where((df['High'] < df['senkou_a'])  &
-								# (df['High'] < df['senkou_b']), -1, df['above_kumo'])
-# df['A_above_B']=np.where((df['senkou_a'] > df['senkou_b']), 1, -1)
+def tk_cross_strat(df):
 
 
-
-# df['price_tenkan_cross']=np.NaN
-# df['price_tenkan_cross']=np.where((df['Open'].shift(1) <= df['tenkan_sen'].shift(1))  &
-								# (df['Open'] > df['tenkan_sen']), 1, df['price_tenkan_cross'])
-# df['price_tenkan_cross']=np.where((df['Open'].shift(1) >= df['tenkan_sen'].shift(1))  &
-								# (df['Open'] < df['tenkan_sen']), -1, df['price_tenkan_cross'])
-
+    df['bull_tk_cross'] = np.where((df['tenkan_sen'].shift(1) <= df['kijun_sen'].shift(1)) &
+                                   (df['tenkan_sen'] > df['kijun_sen']), 1, 0)
+    df['bear_tk_cross'] = np.where((df['tenkan_sen'].shift(1) >= df['kijun_sen'].shift(1)) &
+                                   (df['tenkan_sen'] < df['kijun_sen']), 1, 0)
+    tenkan_above_kijun = np.where(df["tenkan_sen"] > df["kijun_sen"])
 
 
-# df['buy']=np.NaN
-# df['buy']=np.where((df['above_kumo'].shift(1) == 1)  &
-								# (df['A_above_B'].shift(1) == 1) & ((df['tenkan_kiju_cross'].shift(1) == 1) | (df['price_tenkan_cross'].shift(1) == 1)), 1, df['buy'])
-# df['buy']=np.where(df['tenkan_kiju_cross'].shift(1) == -1, 0, df['buy'])
-# df['buy'].ffill(inplace=True)
+def kumo_breakout_strat(df):
+
+    # edit so that only significant breakouts are found
+    df['bull_kumo_breakout'] = np.where((df["Open"] < df['kumo_top']) &
+                                          (df["Close"] > df['kumo_top']), 1, 0)
+    df['bear_kumo_breakout'] = np.where((df["Open"] > df['kumo_bottom']) &
+                                          (df["Close"] < df['kumo_bottom']), 1, 0)
+
+    price_above_kumo = np.where(df["Close"] > df["kumo_top"])
+
+def kumo_twist_strat(df):
+
+    df["kumo_width"] = df["senkou_a_trim"] - df["senkou_b"]
+    kumo_twist = np.zeros(len(df.values))
+    for i in range(len(df.values)):
+        if df["kumo_width"][i]*df["kumo_width"][i-1] < 0:
+            kumo_twist[i] = 1
+    # df["kumo_future"] = np.roll(
+    df["kumo_twist"] = kumo_twist
+
+    # kumo_diff=df["kumo_width"].shift(1) * df["kumo_width"]
+
+def kijun_cross_strat(df):
+
+    df['above_kumo']=0
+    df['above_kumo']=np.where((df['Low'] > df['senkou_a'])   &
+                                        (df['Low'] > df['senkou_b'] ), 1, df['above_kumo'])
+    df['above_kumo']=np.where((df['High'] < df['senkou_a'])  &
+                                        (df['High'] < df['senkou_b']), -1, df['above_kumo'])
+    df['A_above_B']=np.where((df['senkou_a'] > df['senkou_b']), 1, -1)
 
 
-# df['sell']=np.NaN
-# df['sell']=np.where((df['above_kumo'].shift(1) == -1)  &
-								# (df['A_above_B'].shift(1) == -1) & ((df['tenkan_kiju_cross'].shift(1) == -1) | (df['price_tenkan_cross'].shift(1) == -1)), -1, df['sell'])
-# df['sell']=np.where(df['tenkan_kiju_cross'].shift(1) == 1, -1, df['sell'])
-# df['sell'].ffill(inplace=True)
+
+    df['price_tenkan_cross']=np.NaN
+    df['price_tenkan_cross']=np.where((df['Open'].shift(1) <= df['tenkan_sen'].shift(1))  &
+                                        (df['Open'] > df['tenkan_sen']), 1, df['price_tenkan_cross'])
+    df['price_tenkan_cross']=np.where((df['Open'].shift(1) >= df['tenkan_sen'].shift(1))  &
+                                        (df['Open'] < df['tenkan_sen']), -1, df['price_tenkan_cross'])
 
 
+def buy_and_sell(df):
+
+    df['buy']=np.NaN
+    df['buy']=np.where((df['above_kumo'].shift(1) == 1)  &
+                                    (df['A_above_B'].shift(1) == 1) & ((df['tenkan_kiju_cross'].shift(1) == 1) | (df['price_tenkan_cross'].shift(1) == 1)), 1, df['buy'])
+    df['buy']=np.where(df['tenkan_kiju_cross'].shift(1) == -1, 0, df['buy'])
+    df['buy'].ffill(inplace=True)
 
 
-# df['position']=df['buy'] + df['sell']
-# df['stock_returns']=np.log(df['Open']) - np.log(df['Open'].shift(1))
-# df['strategy_returns']=df['stock_returns'] * df['position']
+    df['sell']=np.NaN
+    df['sell']=np.where((df['above_kumo'].shift(1) == -1)  &
+                                    (df['A_above_B'].shift(1) == -1) & ((df['tenkan_kiju_cross'].shift(1) == -1) | (df['price_tenkan_cross'].shift(1) == -1)), -1, df['sell'])
+    df['sell']=np.where(df['tenkan_kiju_cross'].shift(1) == 1, -1, df['sell'])
+    df['sell'].ffill(inplace=True)
 
-# df[['stock_returns','strategy_returns']].cumsum().plot(figsize=(15,8))
+def backtest(df):
+
+    df['position']=df['buy'] + df['sell']
+    df['stock_returns']=np.log(df['Open']) - np.log(df['Open'].shift(1))
+    df['strategy_returns']=df['stock_returns'] * df['position']
+
+    df[['stock_returns','strategy_returns']].cumsum().plot(figsize=(15,8))
