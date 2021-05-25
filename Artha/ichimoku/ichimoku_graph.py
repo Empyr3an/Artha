@@ -2,7 +2,7 @@ import chart_studio.plotly as py
 import plotly.graph_objs as go
 import plotly.subplots as ms
 
-def setup_ichi_graph(d, ticker, time_frame, cloud=True, lines=True, features=None):
+def setup_ichi_graph(d, ticker, time_frame, kumo=True, lines=True, features=None):
     fig = ms.make_subplots(rows=2,
                            cols=1,
                            shared_xaxes=True,
@@ -20,8 +20,8 @@ def setup_ichi_graph(d, ticker, time_frame, cloud=True, lines=True, features=Non
         yaxis2_title="Volume",
         xaxis2_title="Time",
         hovermode="x unified",
-        xaxis_rangeslider_visible=False,
-        height=950
+        height=950,
+        xaxis_rangeslider_visible=False
     )
 
     # add basic candlesticks
@@ -39,9 +39,9 @@ def setup_ichi_graph(d, ticker, time_frame, cloud=True, lines=True, features=Non
                   row=2,
                   col=1)
 
-    # adding cloud and other features
-    if cloud:
-        fig = add_ichimoku_cloud(d, fig)
+    # adding kumo and other features
+    if kumo:
+        fig = add_ichimoku_kumo(d, fig)
     if lines:
         fig = add_tenkan_kijun(d, fig)
 
@@ -49,7 +49,7 @@ def setup_ichi_graph(d, ticker, time_frame, cloud=True, lines=True, features=Non
 
     return fig
 
-def add_ichimoku_cloud(d, fig):
+def add_ichimoku_kumo(d, fig):
 
     fig.add_trace(go.Scatter(x=d['senkou_a'].index,
                              y=d['senkou_a'],
@@ -71,13 +71,13 @@ def add_ichimoku_cloud(d, fig):
                              showlegend=False,
                              hoverinfo='skip'))
 
-    fig.add_trace(go.Scatter(x=d['cloud_bottom'].index,
-                             y=d['cloud_bottom'],
+    fig.add_trace(go.Scatter(x=d['kumo_bottom'].index,
+                             y=d['kumo_bottom'],
                              type='scatter',
                              mode='lines',
                              line_width=1,
                              marker_color='seagreen',
-                             name='cloud_bottom',
+                             name='kumo_bottom',
                              opacity=0,
                              showlegend=False,
                              fill="tonexty",
@@ -92,13 +92,13 @@ def add_ichimoku_cloud(d, fig):
                              name='senkou_b',
                              hoverinfo='skip'))
 
-    fig.add_trace(go.Scatter(x=d['cloud_bottom'].index,
-                             y=d['cloud_bottom'],
+    fig.add_trace(go.Scatter(x=d['kumo_bottom'].index,
+                             y=d['kumo_bottom'],
                              type='scatter',
                              mode='lines',
                              line_width=1,
                              marker_color='red',
-                             name='cloud_bottom',
+                             name='kumo_bottom',
                              opacity=0,
                              showlegend=False,
                              fill="tonexty",
@@ -143,9 +143,9 @@ def add_feature(d, fig, features):
 
         events = [d[feature].index[i] for i in range(len(d)) if d[feature].values[i] == 1]
 
-        shapes.extend([dict(x0=str(date_str), x1=str(date_str), y0=0, y1=1, xref='x', yref='paper', line_width=1) for date_str in events])
+        shapes.extend([dict(x0=str(date_str), x1=str(date_str), y0=.22, y1=1, xref='x', yref='paper', line_width=1) for date_str in events])
         annotations.extend([dict(
-            x=str(date_str), y=0.05, xref='x', yref='paper',
+            x=str(date_str), y=0.22, xref='x', yref='paper',
             showarrow=False, xanchor='left', text=feature.replace("_", " ").capitalize()) for date_str in events])
 
         #bear tk cross

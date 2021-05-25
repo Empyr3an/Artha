@@ -13,5 +13,6 @@ ticker, time_frame = "ETHBTC", "4h"
 # klines = get_klines(ticker, time_frame, "01/01/2020 00:00:00")
 # df = get_klines_df(klines)
 
-d = ichimoku_setup(load_klines("ETHBTC"))[-550:]
+df = ichimoku_setup(load_klines("ETHBTC"))
+d = df[-550:]
 

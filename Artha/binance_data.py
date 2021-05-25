@@ -84,19 +84,22 @@ def get_klines_df(klines, window4=30):
                "Ignore"]
 
     df = pd.DataFrame.from_records(
-                klines + [np.full(len(columns), np.nan)]*window4,
-                index=pd.date_range(start=date_to_twitter(klines[0][0]),
-                                    end=date_to_twitter(klines[-1][0]+extra_time(klines)),
-                                    periods=len(klines)+window4),
+                [np.full(len(columns), np.nan)]*window4+
+                klines +
+                [np.full(len(columns), np.nan)]*window4,
+                index=pd.date_range(
+                    start=date_to_twitter(klines[0][0]-extra_time(klines)),
+                    end=date_to_twitter(klines[-1][0]+extra_time(klines)),
+                periods=len(klines)+2*window4),
                 columns=columns)
 
     df["Ind"] = list(range(len(df.index)))
-
     return df[["Ind"]+columns]
 
 
 def save_klines(df, ticker):
     df.to_csv("../data/crypto_price_data/"+ticker+".csv", index=True)
+    print("saved", ticker)
 
 
 def klines_worker(ticker, start_date):

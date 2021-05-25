@@ -7,7 +7,7 @@
 Artha/configs
 notebooks/*.txt
 data/*
-archive/*
+old/*
 *.pickle
 *.mov
 *.pdf

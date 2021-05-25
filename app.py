@@ -2,7 +2,7 @@ exec(open("start_app.py").read())
 
 
 # features = [ 'tk_cross', 'kumo_breakout', 'price_kijun_cross', 'senkou_cross', 'chikou_cross']
-features = ["bull_tk_cross", "bull_kumo_breakout"]
+features = ["bull_tk_cross", "bull_kumo_breakout", "strong_chikou"]
 
 app = dash.Dash()
 
@@ -11,8 +11,8 @@ app.layout = html.Div([
 
         dcc.Checklist(
             id = "features",
-            options = [{'label':f, 'value':f} for f in features],
-            value = [features[0]],
+            options = [{'label':f.replace("_", " ").capitalize(), 'value':f} for f in features],
+            value = [features[2]],
             labelStyle = {'display':'block'}
         ),
 
@@ -37,7 +37,7 @@ app.layout = html.Div([
     Input('features', 'value')
 )
 def update_graph(features):
-    fig = setup_ichi_graph(d, ticker, time_frame, cloud=True, lines=True, features=features)
+    fig = setup_ichi_graph(d, ticker, time_frame, kumo=True, lines=True, features=features)
     return fig
 
 
