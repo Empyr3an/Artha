@@ -1,7 +1,7 @@
 import ta
 import pandas as pd
 import numpy as np
-
+from sklearn.linear_model import LinearRegression
 
 def ichimoku_setup(df, window=30):
     ichi = ta.trend.IchimokuIndicator(df["High"], df["Low"], df["Close"])
@@ -19,12 +19,12 @@ def ichimoku_setup(df, window=30):
     df["chikou_span"] = ichi.ichimoku_chikou()
 
     # Init special features
-    df["strong_chikou"] = find_strong_chikous(df)
-    # df["strong_tk"] = get
+    df["strong_chikou"] = strong_chikous(df)
+    df["strong_tk"] = strong_tks(df)
 
     return df
 
-def find_strong_chikous(df, window=30, pct=5, days=10):
+def strong_chikous(df, window=30, pct=5, days=10):
     return np.roll(np.array([is_strong_chikou(df, i) for i in range(len(df.values))]),0)
 
 def in_cloud(val, kline):
@@ -54,6 +54,30 @@ def is_strong_chikou(df, index, window=30, pct=5, days=10):
 def percent_diff(current, prev):
     return abs((current-prev)/prev)
 
+def strong_tks(df):
+    return np.array([is_strong_tk(df, i) for i in range(len(df.values))])
+
+def slope(y, x=None):
+    # y = y/np.linalg.norm(y, ord=1)
+    if not x:
+        step = np.mean(y)/len(y)
+        x = np.arange(0, len(y)*step, step).reshape((-1,1))
+    model = LinearRegression().fit(x, y)
+    return model.coef_
+
+def is_strong_tk(df, index):
+    candle = df.iloc[index]
+    if np.isnan(np.sum(candle[["Close", "tenkan_sen", "kijun_sen"]].tolist())):
+        return 0
+    if percent_diff(candle["Close"], candle["tenkan_sen"])<.002:
+        return 0
+    # if percent_diff(candle["Close"], candle["kijun_sen"])>.035:
+    #     return 0
+    # if in_cloud(candle["Close"], candle):
+        # need to consider some candles in past and future to see if kijun/tenkan will end up in cloud
+
+    # if slopek
+    return 1
 
 
 # def basic_bull_entry(df):
