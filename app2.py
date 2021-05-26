@@ -3,13 +3,10 @@ import dash
 import dash_core_components as dcc
 import dash_html_components as html
 from dash.dependencies import Input, Output
-from Artha.ichimoku.ichimoku_graph import *
 exec(open("load_data.py").read())
 
-chart_features = ["price", "volume", "kumo", "tenkan", "kijun", "chikou"]
-# features = [ 'tk_cross', 'kumo_breakout', 'price_kijun_cross', 'senkou_cross', 'chikou_cross']
-# features = ["bull_tk_cross", "bull_kumo_breakout", "strong_chikou"]
-features = ["strong_chikou", "strong_tk"]
+chart_features = ["price", "volume"]
+features = ["vol_spikes"]
 
 app = dash.Dash()
 
@@ -19,14 +16,14 @@ app.layout = html.Div([
         dcc.Checklist(
             id = "chart_features",
             options = [{'label':f.replace("_", " ").capitalize(), 'value':f} for f in chart_features],
-            value=["price", "volume", "tenkan", "kijun"],
+            value=["price", "volume"],
             labelStyle = {'display':'block'}
         ),
         html.H3(children = "Specific Callouts"),
         dcc.Checklist(
             id = "features",
             options = [{'label':f.replace("_", " ").capitalize(), 'value':f} for f in features],
-            value = ["strong_tk"],
+            value = ["vol_spikes"],
             labelStyle = {'display':'block'}
         ),
 
