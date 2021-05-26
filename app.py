@@ -13,14 +13,14 @@ app.layout = html.Div([
         dcc.Checklist(
             id = "chart_features",
             options = [{'label':f.replace("_", " ").capitalize(), 'value':f} for f in chart_features],
-            value=["price", "volume", "tenkan"],
+            value=["price", "volume", "tenkan", "kijun"],
             labelStyle = {'display':'block'}
         ),
         html.H3(children = "Specific Callouts"),
         dcc.Checklist(
             id = "features",
             options = [{'label':f.replace("_", " ").capitalize(), 'value':f} for f in features],
-            # value = [features[0]],
+            value = ["strong_tk"],
             labelStyle = {'display':'block'}
         ),
 
@@ -46,7 +46,7 @@ app.layout = html.Div([
     Input('chart_features', 'value')
 )
 def update_graph(features, chart_features):
-    fig = setup_ichi_graph(df[:400], ticker, time_frame, chart=chart_features, features=features)
+    fig = setup_ichi_graph(df[4200:], ticker, time_frame, chart=chart_features, features=features)
     return fig
 
 

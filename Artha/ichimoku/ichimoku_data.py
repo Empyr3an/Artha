@@ -65,20 +65,24 @@ def slope(y, x=None):
     model = LinearRegression().fit(x, y)
     return model.coef_
 
-def is_strong_tk(df, index):
+def is_strong_tk(df, index, sensitivity=3):
     candle = df.iloc[index]
-    if np.isnan(np.sum(candle[["Close", "tenkan_sen", "kijun_sen"]].tolist())):
+    if np.isnan(np.sum(df.iloc[index-sensitivity][["Close", "tenkan_sen", "kijun_sen"]].tolist())) \
+        or np.isnan(np.sum(df.iloc[index][["Close", "tenkan_sen", "kijun_sen"]].tolist())):
         return 0
-    if percent_diff(candle["Close"], candle["tenkan_sen"])<.002:
+    if percent_diff(candle["Close"], candle["tenkan_sen"])>.025:
         return 0
-    # if percent_diff(candle["Close"], candle["kijun_sen"])>.035:
-    #     return 0
-    # if in_cloud(candle["Close"], candle):
+    if percent_diff(candle["Close"], candle["kijun_sen"])>.035:
+        return 0
+    if in_cloud(candle["Close"], candle):
+       return 0
         # need to consider some candles in past and future to see if kijun/tenkan will end up in cloud
+    if slope(df["tenkan_sen"][index-sensitivity:index])[0]<.0025:
+        return 0
+    if slope(df["kijun_sen"][index-sensitivity:index])[0]<.0025:
+        return 0
 
-    # if slopek
     return 1
-
 
 # def basic_bull_entry(df):
     # price above kumo
